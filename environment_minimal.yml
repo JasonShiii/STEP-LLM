@@ -1,0 +1,60 @@
+# CAD Text-to-STEP Generation Environment
+# Python 3.10 with CUDA support
+
+name: step_llm
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  # Python
+  - python=3.10
+  - pip
+  
+  # Scientific Computing (conda)
+  - numpy
+  - scipy
+  
+  # FAISS for vector search (conda install recommended for CPU version)
+  - faiss-cpu=1.7.2
+  
+  # Jupyter support (optional but recommended)
+  - ipykernel
+  - jupyter
+  
+  # PIP packages
+  - pip:
+      # Deep Learning Core
+      - torch>=2.0.0
+      - torchvision>=0.15.0
+      - transformers>=4.35.0
+      - datasets>=3.0.0
+      
+      # Unsloth for efficient training
+      - unsloth==2025.3.18
+      - unsloth_zoo==2025.3.16
+      
+      # Training utilities
+      - trl>=0.15.0
+      - peft>=0.15.0
+      - accelerate>=1.0.0
+      - bitsandbytes>=0.46.0
+      
+      # Data processing
+      - pandas>=2.0.0
+      - scikit-learn>=1.0.0
+      
+      # Embeddings and retrieval
+      - sentence-transformers>=4.0.0
+      
+      # Utilities
+      - tqdm
+      - pyyaml
+      - click
+      
+      # Hugging Face Hub
+      - huggingface-hub
+      
+      # Additional dependencies
+      - pillow
+      - safetensors

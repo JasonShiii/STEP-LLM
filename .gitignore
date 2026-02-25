@@ -1,0 +1,226 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Virtual Environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+brepgen_env/
+cad_llm2/
+cad_llm3/
+cad_base/
+
+# WandB (Weights & Biases)
+wandb/
+
+# Model checkpoints and large models
+# (checkpoint dirs under data/ are excluded by the data/ rule above)
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.safetensors
+checkpoint-*/
+llama_3.2/
+Qwen2_5_3B/
+Qwen2.5-3B-Instruct/
+
+# Compiled cache
+unsloth_compiled_cache/
+
+# Logs
+*.log
+logs/
+training_log/
+
+# Temporary files
+*.tmp
+*.temp
+*.backup
+*.bak
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Project directories to exclude
+continuous_training_junyang/
+LLaMA-Factory/
+
+# Data & Models (large / local-only)
+# data/ is a symlink to /data/group — datasets, checkpoints, generated files
+data
+data/
+models
+models/
+merge_model
+merge_model/
+checkpoints
+checkpoints/
+# *.step
+# *.stp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+credentials.json
+
+# Conda environment exports with user paths
+# Note: environment.yml is included but prefix line should be removed before committing
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Test coverage
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Large archives
+*.tar.gz
+
+# =============================================================================
+# Project-specific exclusions
+# =============================================================================
+
+# Internal / development-only tools
+reserialize/
+reserialize
+
+# Evaluation: Shape subdir is an embedded git repo with a full CUDA installation
+eval_ckpt/Shape/
+eval_ckpt/ckpt_outputs_response/
+# Internal eval results, redundant scripts, and WandB exports
+eval_ckpt/wandb_export_*.csv
+eval_ckpt/plot_loss_curve.ipynb
+eval_ckpt/generate_step_multi_gpu_independent.py
+eval_ckpt/run_multi_gpu_independent.sh
+eval_ckpt/run_multi_gpu_manual.sh
+eval_ckpt/run_multi_gpu_safe.sh
+eval_ckpt/verify_data_distribution.py
+eval_ckpt/example_usage.py
+eval_ckpt/setup_environment.sh
+eval_ckpt/CR/CR_ckpts.csv
+eval_ckpt/CR/CR_ckpts_dfs.csv
+eval_ckpt/CR/CR_ckpts_new_caption.csv
+eval_ckpt/CR/CR_ckpts_rr.csv
+eval_ckpt/CR/CR_ckpts_rr_copy.csv
+eval_ckpt/ACE/GT.txt
+eval_ckpt/ACE/Gen.txt
+eval_ckpt/renderability/result_output/
+
+# Redundant / older root-level scripts
+token_cal.py
+token_cal_ave.py
+shuffle_data.py
+check_duplicate_decimals.py
+check_single_part_files.py
+check_val_json.py
+inspect_bits.py
+render5.py
+reorder_step copy.py
+dataset_construct.py
+llama_finetuning_unsloth.py
+
+# Old / duplicate data files at root
+cad_captions_old.csv
+cad_captions_with_tokens.csv
+cad_captions_with_tokens_500-1000.csv
+conda_packages.txt
+
+# Redundant notebooks
+captioning_1.ipynb
+finetuning_llama3.ipynb
+llama3_settingup_finetune.ipynb
+generate_step_iterate.ipynb
+plot_figure.ipynb
+
+# Internal meta / cleanup docs (generated during development)
+CLEANUP_SUMMARY.md
+CLEANUP_FINAL_SUMMARY.md
+REMOVED_CONTENT_SUMMARY.md
+UPDATE_SUMMARY.md
+RELEASE_CHECKLIST.md
+ENVIRONMENT_SETUP.md
+ENVIRONMENT_QUICKSTART.md
+ENVIRONMENT_CONFIG_SUMMARY.md
+DATASET_RELEASE.md
+
+# Internal eval scripts
+eval_ckpt/eval_loss_by_ckpt2.py
+eval_ckpt/eval_loss_by_ckpt3.py
+eval_ckpt/eval_loss_by_ckpt4.py
+eval_ckpt/debug_find_delete_longest_data.py
+eval_ckpt/test_minimal.py
+eval_ckpt/recalculate_token_count.py
+eval_ckpt/extract_training_eval_logs.py
+eval_ckpt/TROUBLESHOOTING.md
+eval_ckpt/DATA_DISTRIBUTION_EXPLANATION.md
+eval_ckpt/generate_step_initial.py
+eval_ckpt/generate_step_initial_standard.py
+eval_ckpt/generate_step_ckpt.py
+
+# data_filter_long: keep only the scripts and READMEs, not internal data files
+data_filter_long/deleted_list/
+data_filter_long/filtered_datasets/
+data_filter_long/token_stats/
+data_filter_long/test_dataset.json
+
+# Duplicate caption file with tokens (keep clean versions without token counts)
+cad_captions_with_tokens_dfs.csv
+
+# Claude Code internal settings
+.claude/
+
+# Stray files
+Untitled
