@@ -24,7 +24,7 @@ mkdir -p "$DEST_DIR"
 # ── Option A: HuggingFace Hub ─────────────────────────────────────────────────
 # pip install huggingface_hub
 #
-# Replace YOUR_HF_USERNAME with your actual HuggingFace username after uploading.
+# Replace JasonShiii with your actual HuggingFace username after uploading.
 
 download_hf() {
     local repo_id="$1"
@@ -35,7 +35,7 @@ download_hf() {
 }
 
 # ── Option B: GitHub Releases ─────────────────────────────────────────────────
-# Replace YOUR_GITHUB_USER/step-llm with your actual repo path after release.
+# Replace JasonShiii/STEP-LLM with your actual repo path after release.
 
 download_gh() {
     local url="$1"
@@ -51,26 +51,26 @@ download_gh() {
 
 if [[ "$MODEL" == "llama" || "$MODEL" == "both" ]]; then
     # --- HuggingFace (uncomment and fill in after uploading) ---
-    # download_hf "YOUR_HF_USERNAME/step-llm-llama3b" "$DEST_DIR/step-llm-llama3b"
+    # download_hf "JasonShiii/step-llm-llama3b" "$DEST_DIR/step-llm-llama3b"
 
     # --- GitHub Releases (uncomment and fill in after creating release) ---
     # download_gh \
-    #   "https://github.com/YOUR_GITHUB_USER/step-llm/releases/download/v1.0/step-llm-llama3b.zip" \
+    #   "https://github.com/JasonShiii/STEP-LLM/releases/download/v1.0/step-llm-llama3b.zip" \
     #   "$DEST_DIR/step-llm-llama3b"
 
-    echo "[Llama] TODO: fill in HuggingFace or GitHub release URL above."
+    echo "[Llama] Checkpoint coming soon — see https://huggingface.co/JasonShiii/step-llm-llama3b"
 fi
 
 if [[ "$MODEL" == "qwen" || "$MODEL" == "both" ]]; then
-    # --- HuggingFace (uncomment and fill in after uploading) ---
-    # download_hf "YOUR_HF_USERNAME/step-llm-qwen3b" "$DEST_DIR/step-llm-qwen3b"
+    # --- HuggingFace (uncomment once uploaded) ---
+    # download_hf "JasonShiii/step-llm-qwen3b" "$DEST_DIR/step-llm-qwen3b"
 
-    # --- GitHub Releases (uncomment and fill in after creating release) ---
+    # --- GitHub Releases (uncomment once a release is created) ---
     # download_gh \
-    #   "https://github.com/YOUR_GITHUB_USER/step-llm/releases/download/v1.0/step-llm-qwen3b.zip" \
+    #   "https://github.com/JasonShiii/STEP-LLM/releases/download/v1.0/step-llm-qwen3b.zip" \
     #   "$DEST_DIR/step-llm-qwen3b"
 
-    echo "[Qwen] TODO: fill in HuggingFace or GitHub release URL above."
+    echo "[Qwen] Checkpoint coming soon — see https://huggingface.co/JasonShiii/step-llm-qwen3b"
 fi
 
 echo ""

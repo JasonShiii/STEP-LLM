@@ -140,13 +140,18 @@ reserialize
 # Evaluation: Shape subdir is an embedded git repo with a full CUDA installation
 eval_ckpt/Shape/
 eval_ckpt/ckpt_outputs_response/
-# Internal eval results, redundant scripts, and WandB exports
-eval_ckpt/wandb_export_*.csv
-eval_ckpt/plot_loss_curve.ipynb
+# Multi-GPU scripts (not part of DATE submission — Unsloth multi-GPU support
+# was limited at submission time; single-GPU training/inference was used)
+eval_ckpt/generate_step_multi_gpu.py
+eval_ckpt/run_multi_gpu.sh
+eval_ckpt/MULTI_GPU_README.md
 eval_ckpt/generate_step_multi_gpu_independent.py
 eval_ckpt/run_multi_gpu_independent.sh
 eval_ckpt/run_multi_gpu_manual.sh
 eval_ckpt/run_multi_gpu_safe.sh
+# Internal eval results, redundant scripts, and WandB exports
+eval_ckpt/wandb_export_*.csv
+eval_ckpt/plot_loss_curve.ipynb
 eval_ckpt/verify_data_distribution.py
 eval_ckpt/example_usage.py
 eval_ckpt/setup_environment.sh
@@ -177,6 +182,10 @@ cad_captions_old.csv
 cad_captions_with_tokens.csv
 cad_captions_with_tokens_500-1000.csv
 conda_packages.txt
+# Ongoing journal extension (not part of DATE submission)
+medium_8000_simple.csv
+medium_8000_medium.csv
+medium_8000_complex.csv
 
 # Redundant notebooks
 captioning_1.ipynb

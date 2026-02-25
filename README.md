@@ -11,7 +11,7 @@ STEP-LLM fine-tunes compact LLMs (Llama-3.2-3B and Qwen2.5-3B) to generate valid
 
 | Component | Description |
 |---|---|
-| **Data Preparation** | Caption ABC dataset with GPT-4V, reorder STEP entities, build RAG index |
+| **Data Preparation** | Caption ABC dataset with GPT-4o, reorder STEP entities (DFS), build RAG index |
 | **Training** | Fine-tune with [Unsloth](https://github.com/unslothai/unsloth) + LoRA on RAG-formatted STEP data |
 | **Inference** | Generate STEP files with optional FAISS-based retrieval (`generate_step.py`) |
 | **Evaluation** | Chamfer distance, Complete Ratio, renderability metrics |
@@ -28,15 +28,12 @@ cad_codebased/
 ├── round_step_numbers.py          # normalise STEP entity numbering
 ├── data_split.py                  # split dataset into train / val / test
 ├── llama3_SFT_response.py         # training script (reference; see also .ipynb)
-├── captioning.ipynb               # GPT-4V captioning notebook
+├── captioning.ipynb               # GPT-4o captioning notebook
 ├── llama3_SFT_response.ipynb      # training notebook
 ├── requirements.txt
 ├── environment_minimal.yml
-├── cad_captions_0-500.csv         # released captions (models 0–500)
-├── cad_captions_500-1000.csv      # released captions (models 500–1000)
-├── medium_8000_simple.csv         # simple-complexity captions
-├── medium_8000_medium.csv         # medium-complexity captions
-├── medium_8000_complex.csv        # complex-complexity captions
+├── cad_captions_0-500.csv         # released captions (0–500 entity STEP files)
+├── cad_captions_500-1000.csv      # released captions (500–1000 entity STEP files)
 ├── scripts/
 │   ├── download_checkpoints.sh    # download released LoRA adapters
 │   ├── merge_lora_adapter.py      # merge LoRA adapter into base model
@@ -49,7 +46,7 @@ cad_codebased/
 │   └── rag_inference.py           # RAG-augmented generation example
 ├── eval_ckpt/
 │   ├── step_chamfer_reward.py     # Chamfer distance evaluation
-│   ├── generate_step_multi_gpu.py # multi-GPU batch generation
+│   ├── eval_loss_by_ckpt.py       # checkpoint loss evaluation
 │   └── ...
 └── data_filter_long/              # token-count filtering tools
 ```
@@ -80,28 +77,28 @@ conda install -c conda-forge pythonocc-core -y   # for STEP file processing
 # Option A — Qwen2.5-3B-Instruct (recommended)
 huggingface-cli download Qwen/Qwen2.5-3B-Instruct --local-dir ./models/Qwen2.5-3B-Instruct
 
-# Option B — Llama-3.2-3B-Instruct (requires Meta access)
+# Option B — Llama-3.2-3B-Instruct (requires Meta access token)
 huggingface-cli download meta-llama/Llama-3.2-3B-Instruct --local-dir ./models/Llama-3.2-3B-Instruct
 ```
 
 ### 3. Download Fine-tuned LoRA Adapters
 
-We release two LoRA adapters (100–200 MB each):
+We release two LoRA adapters (~150 MB each):
 
-| Model | Base | HuggingFace | GitHub Release |
-|---|---|---|---|
-| STEP-LLM-Llama3B | Llama-3.2-3B-Instruct | [YOUR_HF_USERNAME/step-llm-llama3b] | [v1.0 release] |
-| STEP-LLM-Qwen3B  | Qwen2.5-3B-Instruct   | [YOUR_HF_USERNAME/step-llm-qwen3b]  | [v1.0 release] |
+| Model | Base | HuggingFace |
+|---|---|---|
+| STEP-LLM-Llama3B | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) *(coming soon)* |
+| STEP-LLM-Qwen3B  | Qwen2.5-3B-Instruct   | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) *(coming soon)* |
 
 ```bash
-# After filling in the URLs in scripts/download_checkpoints.sh:
+# Fill in the HuggingFace repo IDs in scripts/download_checkpoints.sh, then:
 bash scripts/download_checkpoints.sh        # both adapters
 bash scripts/download_checkpoints.sh qwen   # Qwen only
 bash scripts/download_checkpoints.sh llama  # Llama only
 ```
 
-> **Note:** The adapters can be used directly at inference time (see Step 4).
-> Merging into a full model is optional — see [Merge LoRA Adapter](#merge-lora-adapter-optional).
+> The adapters can be used directly at inference time without merging.
+> See [Merge LoRA Adapter](#merge-lora-adapter-optional) if you prefer a standalone model.
 
 ### 4. Run Inference
 
@@ -112,15 +109,15 @@ python generate_step.py \
     --caption   "A cylindrical bolt with a hexagonal head" \
     --save_dir  ./generated
 
-# With RAG (better accuracy; requires the processed dataset):
+# With RAG (retrieves a similar example to guide generation):
 python generate_step.py \
-    --ckpt_path    ./checkpoints/step-llm-qwen3b \
+    --ckpt_path     ./checkpoints/step-llm-qwen3b \
     --use_rag \
-    --db_csv_path  ./cad_captions_0-500.csv \
+    --db_csv_path   ./cad_captions_0-500.csv \
     --step_json_dir ./data/abc_rag/20500_dfs \
-    --caption      "A cylindrical bolt with a hexagonal head" \
-    --save_dir     ./generated \
-    --output_name  bolt.step
+    --caption       "A cylindrical bolt with a hexagonal head" \
+    --save_dir      ./generated \
+    --output_name   bolt.step
 ```
 
 See `python generate_step.py --help` for all options.
@@ -134,10 +131,10 @@ See `python generate_step.py --help` for all options.
 The released checkpoints are LoRA adapters, not full models. This keeps file
 sizes small (~150 MB vs ~6 GB) and respects base model licenses.
 
-| Checkpoint | Base model | Dataset | Steps |
+| Checkpoint | Base model | Training data | Steps |
 |---|---|---|---|
-| step-llm-llama3b | Llama-3.2-3B-Instruct | 20k DFS-reordered STEP files | 7200 |
-| step-llm-qwen3b  | Qwen2.5-3B-Instruct   | 20k DFS-reordered STEP files | 9000 |
+| step-llm-llama3b | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 7200 |
+| step-llm-qwen3b  | Qwen2.5-3B-Instruct   | ~20k STEP files, 0–500 entities | 9000 |
 
 ### Merge LoRA Adapter (optional)
 
@@ -160,24 +157,38 @@ python generate_step.py \
 
 ## Dataset
 
+### STEP File Complexity and Token Length
+
+STEP files can be extremely long — a single file often contains thousands of
+entity lines, each consuming significant context window. To make fine-tuning
+feasible within a 16k token context window, we filter the ABC dataset by
+**entity count**:
+
+| Entity range | Approx. token length | Used in |
+|---|---|---|
+| 0–500 entities    | ~500–8k tokens  | DATE 2026 paper **(this release)** |
+| 500–1000 entities | ~8k–16k tokens  | Ongoing journal extension |
+
+For the DATE submission, we use the **first 10 chunks** of the ABC dataset
+(`abc_0001_step_v00` to `abc_0010_step_v00`, ~20k models) filtered to STEP
+files with **0–500 entities**. The 500–1000 entity range is ongoing work and
+not part of this release.
+
 ### Released Captions
 
-We release the GPT-4V captions we generated for the ABC dataset. The caption
-CSV files are included in this repo:
+We release the GPT-4o generated captions for the ABC dataset:
 
-| File | Models | Description |
+| File | Entity range | Description |
 |---|---|---|
-| `cad_captions_0-500.csv`   | ~10k | Captions for ABC chunks 0001–0500 |
-| `cad_captions_500-1000.csv`| ~10k | Captions for ABC chunks 0501–1000 |
-| `medium_8000_simple.csv`   | ~3k  | Simple-geometry subset |
-| `medium_8000_medium.csv`   | ~3k  | Medium-geometry subset |
-| `medium_8000_complex.csv`  | ~3k  | Complex-geometry subset |
+| `cad_captions_0-500.csv`    | 0–500 entities    | Captions used in the DATE paper |
+| `cad_captions_500-1000.csv` | 500–1000 entities | Captions for ongoing journal extension |
 
 Columns: `model_id`, `description`, `isDescribable`
 
 ### ABC Dataset (download separately)
 
-The STEP files themselves come from the ABC dataset (NYU):
+The STEP files come from the [ABC Dataset](https://archive.nyu.edu/handle/2451/43778) (NYU).
+We do **not** redistribute the STEP files — download them directly:
 
 ```bash
 bash scripts/download_abc_dataset.sh
@@ -188,14 +199,14 @@ Place downloaded chunks under `data/abccad/`.
 
 ### Build the Full RAG Dataset
 
-After downloading the ABC dataset and the captions:
+After downloading the ABC dataset and captions:
 
 ```bash
 # 1. Reorder STEP entities (DFS order, eliminates forward references)
 python reorder_step.py data/abccad/ --out-dir data/dfs_step/
 
 # 2. Normalise entity numbering
-python round_step_numbers.py   # (configure paths inside script)
+python round_step_numbers.py   # configure paths inside the script
 
 # 3. Build RAG dataset (pairs each STEP file with a retrieved similar example)
 python dataset_construct_rag.py
@@ -215,11 +226,13 @@ See `docs/DATASET.md` for details.
 
 Training uses [Unsloth](https://github.com/unslothai/unsloth) for efficient
 LoRA fine-tuning (2× faster, ~30% less VRAM than standard PEFT).
+All training in the DATE submission was performed on a **single GPU**.
 
 ### Prompt Template
 
-The model is trained on this format (used at both training and inference time):
+The model is trained on this format (used consistently at both training and inference time):
 
+**With RAG** (recommended):
 ```
 You are a CAD model generation assistant trained to produce STEP (.step) files
 based on textual descriptions. Given the following object description and
@@ -230,7 +243,20 @@ the described object.
 {natural language description}
 
 ### retrieved relevant step file:
-{retrieved STEP DATA section}   ← omitted when USE_RAG=False
+{retrieved STEP DATA section}
+
+### output:
+{target STEP DATA section}
+```
+
+**Without RAG:**
+```
+You are a CAD model generation assistant trained to produce STEP (.step) files
+based on textual descriptions. Given the following object description, generate
+a STEP file that accurately represents the described object.
+
+### caption:
+{natural language description}
 
 ### output:
 {target STEP DATA section}
@@ -263,11 +289,13 @@ Key hyperparameters used for the released checkpoints:
 
 ```bash
 # Chamfer distance (shape similarity)
-cd eval_ckpt
-python step_chamfer_reward.py
+python eval_ckpt/step_chamfer_reward.py
 
-# Multi-GPU batch generation
-bash run_multi_gpu.sh
+# Complete Ratio (STEP file validity)
+python eval_ckpt/CR/CR_calculate.py
+
+# Renderability check
+python eval_ckpt/renderability/check_renderability.py
 ```
 
 See `eval_ckpt/README_eval.md` and `eval_ckpt/README_step_chamfer_reward.md`.
@@ -278,12 +306,11 @@ See `eval_ckpt/README_eval.md` and `eval_ckpt/README_step_chamfer_reward.md`.
 
 > **Hardcoded paths:** Several scripts (`dataset_construct_rag.py`,
 > `retrieval.py`, `render_step.py`, etc.) still contain hardcoded absolute
-> paths. Update these to match your local setup before running. A future
-> release will add full argparse support to these scripts.
+> paths. Update these to match your local setup before running.
 
-> **CUDA requirement:** Inference and training require an NVIDIA GPU with
-> CUDA 11.8+. The model generates sequences up to 14,000 tokens, so at least
-> 16 GB VRAM is recommended (24 GB+ for training).
+> **CUDA requirement:** Inference and training require an NVIDIA GPU.
+> STEP files can be very long (up to 16k tokens), so at least 16 GB VRAM
+> is recommended for inference, and 24 GB+ for training.
 
 ---
 
