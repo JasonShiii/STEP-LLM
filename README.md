@@ -22,18 +22,21 @@ STEP-LLM fine-tunes compact LLMs (Llama-3.2-3B and Qwen2.5-3B) to generate valid
 cad_codebased/
 ├── generate_step.py               # main inference entry point (argparse CLI)
 ├── retrieval.py                   # FAISS-based semantic retrieval
-├── dataset_construct_rag.py       # build RAG training dataset
-├── reorder_step.py                # reorder & renumber STEP entities (DFS)
-├── render_step.py                 # render STEP files to multi-view images
-├── round_step_numbers.py          # normalise STEP entity numbering
-├── data_split.py                  # split dataset into train / val / test
 ├── llama3_SFT_response.py         # training script (reference; see also .ipynb)
-├── captioning.ipynb               # GPT-4o captioning notebook
 ├── llama3_SFT_response.ipynb      # training notebook
 ├── requirements.txt
 ├── environment_minimal.yml
 ├── cad_captions_0-500.csv         # released captions (0–500 entity STEP files)
 ├── cad_captions_500-1000.csv      # released captions (500–1000 entity STEP files)
+├── data_preparation/              # full data processing pipeline
+│   ├── README.md                  # step-by-step pipeline instructions
+│   ├── round_step_numbers.py      # normalise STEP floating-point precision
+│   ├── step_restructurer.py       # DFS reorder + structural annotations
+│   ├── batch_restructure.sh       # batch wrapper for step_restructurer.py
+│   ├── restore_step_valid.py      # strip annotations → valid STEP file
+│   ├── dataset_construct_rag.py   # build RAG training dataset (FAISS retrieval)
+│   ├── data_split.py              # split dataset into train / val / test
+│   └── captioning.ipynb           # GPT-4o captioning notebook
 ├── scripts/
 │   ├── download_checkpoints.sh    # download released LoRA adapters
 │   ├── merge_lora_adapter.py      # merge LoRA adapter into base model
@@ -185,6 +188,18 @@ We release the GPT-4o generated captions for the ABC dataset:
 
 Columns: `model_id`, `description`, `isDescribable`
 
+### Rendered CAD Images
+
+We provide rendered multi-view images of the ABC Dataset STEP files used in
+this project. These are used by `data_preparation/captioning.ipynb` to generate
+GPT-4o captions. Download links are available on the
+[HuggingFace dataset page](https://huggingface.co/datasets/JasonShiii/STEP-LLM-dataset):
+
+| Split | Entity range | Description |
+|---|---|---|
+| `step_under500_image/`   | 0–500 entities    | Images for DATE 2026 paper (this release) |
+| `step_500-1000_image/`   | 500–1000 entities | Images for ongoing journal extension |
+
 ### ABC Dataset (download separately)
 
 The STEP files come from the [ABC Dataset](https://archive.nyu.edu/handle/2451/43778) (NYU).
@@ -199,26 +214,27 @@ Place downloaded chunks under `data/abccad/`.
 
 ### Build the Full RAG Dataset
 
-After downloading the ABC dataset and captions:
+After downloading the ABC dataset and captions, the data preparation pipeline is:
 
 ```bash
-# 1. Reorder STEP entities (DFS order, eliminates forward references)
-python reorder_step.py data/abccad/ --out-dir data/dfs_step/
+# 1. Normalise floating-point precision in raw STEP files
+python data_preparation/round_step_numbers.py data/abccad/step_under500/ \
+    --output-dir data/rounded_step/
 
-# 2. Normalise entity numbering
-python round_step_numbers.py   # configure paths inside the script
+# 2. DFS reorder + annotate (eliminates forward references for LLM training)
+#    Edit SRC_BASE / DEST_BASE paths at the top of the script first:
+bash data_preparation/batch_restructure.sh
 
-# 3. Build RAG dataset (pairs each STEP file with a retrieved similar example)
-python dataset_construct_rag.py
+# 3. Build RAG dataset (pairs each STEP file with a FAISS-retrieved similar example)
+#    Edit CSV_FILE / STEP_FILE_DIRS / OUTPUT_JSON_PATH at the top first:
+python data_preparation/dataset_construct_rag.py
 
 # 4. Split into train / val / test
-python data_split.py
-
-# Or run the full pipeline:
-bash scripts/process_dataset.sh
+#    Edit the input/output paths at the top first:
+python data_preparation/data_split.py
 ```
 
-See `docs/DATASET.md` for details.
+See `data_preparation/README.md` for full step-by-step instructions.
 
 ---
 
@@ -304,9 +320,10 @@ See `eval_ckpt/README_eval.md` and `eval_ckpt/README_step_chamfer_reward.md`.
 
 ## Important Notes
 
-> **Hardcoded paths:** Several scripts (`dataset_construct_rag.py`,
-> `retrieval.py`, `render_step.py`, etc.) still contain hardcoded absolute
-> paths. Update these to match your local setup before running.
+> **Hardcoded paths:** Several scripts (`data_preparation/dataset_construct_rag.py`,
+> `data_preparation/data_split.py`, `retrieval.py`, etc.) still contain hardcoded
+> absolute paths. Update these to match your local setup before running.
+> See `data_preparation/README.md` for guidance.
 
 > **CUDA requirement:** Inference and training require an NVIDIA GPU.
 > STEP files can be very long (up to 16k tokens), so at least 16 GB VRAM

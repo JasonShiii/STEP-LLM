@@ -176,6 +176,10 @@ render5.py
 reorder_step copy.py
 dataset_construct.py
 llama_finetuning_unsloth.py
+# DFS reorder attempt (strategy did not work — actual reorder is data_preparation/step_restructurer.py)
+reorder_step.py
+# Rendering script removed — rendered images are provided as a separate dataset download
+render_step.py
 
 # Old / duplicate data files at root
 cad_captions_old.csv
