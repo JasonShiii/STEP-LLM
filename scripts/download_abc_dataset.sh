@@ -11,7 +11,7 @@ echo ""
 
 # Configuration
 ABC_DATASET_URL="https://archive.nyu.edu/handle/2451/43778"  # Update with actual download link
-DATA_DIR="${DATA_DIR:-./data}"
+DATA_DIR="${DATA_DIR:-./dataset}"
 ABC_DIR="${DATA_DIR}/abccad"
 
 # Create directories

@@ -8,25 +8,25 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 # ── File Paths — UPDATE THESE to match your local setup ─────────────────────
 # Use cad_captions_0-500.csv for the DATE 2026 paper dataset (0–500 entities)
-CSV_FILE = "./cad_captions_0-500.csv"
+CSV_FILE = "./dataset/cad_captions_0-500.csv"
 # UPDATE STEP_FILE_DIRS to point to your DFS-restructured STEP file directories.
-# After running batch_restructure.sh, your files should be under data/dfs_step/.
+# After running batch_restructure.sh, your files should be under dataset/dfs_step/.
 # Example for the DATE paper (0–500 entity files, chunks 0001–0008):
 STEP_FILE_DIRS = [
-    "./data/dfs_step/0001",
-    "./data/dfs_step/0002",
-    "./data/dfs_step/0003",
-    "./data/dfs_step/0004",
-    "./data/dfs_step/0005",
-    "./data/dfs_step/0006",
-    "./data/dfs_step/0007",
-    "./data/dfs_step/0008",
+    "./dataset/dfs_step/0001",
+    "./dataset/dfs_step/0002",
+    "./dataset/dfs_step/0003",
+    "./dataset/dfs_step/0004",
+    "./dataset/dfs_step/0005",
+    "./dataset/dfs_step/0006",
+    "./dataset/dfs_step/0007",
+    "./dataset/dfs_step/0008",
     # Add 500-1000 entity dirs here for the journal extension:
-    # "./data/dfs_step_500-1000_round/0001",
+    # "./dataset/dfs_step_500-1000/0001",
     # ...
-    # "./data/dfs_step_500-1000_round/0010",
+    # "./dataset/dfs_step_500-1000/0010",
 ]
-OUTPUT_JSON_PATH = "./data/rag_dataset.json"
+OUTPUT_JSON_PATH = "./dataset/rag_dataset.json"
 
 # Step 1: Load captions from CSV
 def load_data(csv_file):

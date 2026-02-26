@@ -89,6 +89,17 @@ checkpoints/
 # *.step
 # *.stp
 
+# dataset/ — large user-downloaded data (ignored); caption CSVs are tracked
+dataset/abccad/
+dataset/rendered_images/
+dataset/dfs_step/
+dataset/dfs_step_500-1000/
+dataset/rounded_step/
+dataset/dfs_step_valid/
+dataset/rag_dataset.json
+dataset/abc_rag/
+dataset/STEP_generated/
+
 # IDE
 .vscode/
 .idea/

@@ -11,8 +11,8 @@ set -euo pipefail
 
 # ── Configurable paths ─────────────────────────────────────────────────────────
 # UPDATE these to match your local data directory layout:
-SRC_BASE="./data/abccad/step_500-1000"   # source: raw STEP files from ABC dataset
-DEST_BASE="./data/dfs_step_500-1000"     # destination: DFS-restructured STEP files
+SRC_BASE="./dataset/abccad/step_500-1000"   # source: raw STEP files from ABC dataset
+DEST_BASE="./dataset/dfs_step_500-1000"     # destination: DFS-restructured STEP files
 # ────────────────────────────────────────────────────────────────────────────────
 
 # Resolve restructurer path relative to this script's location

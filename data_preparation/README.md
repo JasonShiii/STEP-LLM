@@ -14,19 +14,21 @@ Raw ABC STEP files
        ▼
 2. step_restructurer.py       — DFS reorder + structural annotations
    (batch_restructure.sh)       eliminates forward references; adds /* ... */ markers
-       │
+       │                        (annotations are valid STEP comments — files are
+       │                         training-ready and loadable by CAD tools as-is)
        ▼
-3. restore_step_valid.py      — strip annotations → valid, loadable STEP file
-       │
-       ▼
-4. dataset_construct_rag.py   — pair each STEP file with a FAISS-retrieved similar
+3. dataset_construct_rag.py   — pair each STEP file with a FAISS-retrieved similar
                                  example to build the RAG training dataset (JSON)
        │
        ▼
-5. data_split.py              — split dataset JSON into train / val / test
+4. data_split.py              — split dataset JSON into train / val / test
        │
        ▼
-   data/abc_rag/20500_dfs/{train,val,test}.json   ← ready for llama3_SFT_response.py
+   dataset/abc_rag/train_val_test/{train,val,test}.json   ← ready for llama3_SFT_response.py
+
+[Optional] restore_step_valid.py — strips /* ... */ annotations and renumbers
+   entity IDs. Only needed if a specific downstream tool cannot handle
+   STEP comments, or to post-process model-generated output.
 ```
 
 ## Scripts
@@ -48,63 +50,64 @@ Raw ABC STEP files
 ```bash
 # Download ABC dataset chunks (see scripts/download_abc_dataset.sh)
 bash scripts/download_abc_dataset.sh
-# Place chunks under data/abccad/
+# Chunks are placed under dataset/abccad/
 ```
 
 ### 1. Normalise Floating-Point Numbers
 
 ```bash
 # Process a single file
-python data_preparation/round_step_numbers.py path/to/file.step --output-dir data/rounded_step/
+python data_preparation/round_step_numbers.py path/to/file.step --output-dir dataset/rounded_step/
 
 # Process an entire directory
-python data_preparation/round_step_numbers.py data/abccad/step_under500/ --output-dir data/rounded_step/
+python data_preparation/round_step_numbers.py dataset/abccad/step_under500/ --output-dir dataset/rounded_step/
 ```
 
 ### 2. DFS Restructuring
 
 ```bash
 # Single file
-python data_preparation/step_restructurer.py path/to/file.step -o data/dfs_step/0001/
+python data_preparation/step_restructurer.py path/to/file.step -o dataset/dfs_step/0001/
 
-# Batch (all chunks, 0001–0010) — edit paths at the top of the script first
+# Batch (all chunks, 0001–0010) — edit SRC_BASE / DEST_BASE at the top of the script first
 bash data_preparation/batch_restructure.sh
 ```
 
-### 3. Restore Valid STEP Files (optional — for evaluation)
+### 3. Build RAG Dataset
 
-The restructured files contain `/* ... */` annotations that help the LLM but
-make the files unloadable by CAD tools. Strip them when you need valid STEP
-files for renderability / Chamfer-distance evaluation:
+Path defaults in `dataset_construct_rag.py` already point to `dataset/`:
+- `CSV_FILE` → `./dataset/cad_captions_0-500.csv`
+- `STEP_FILE_DIRS` → `./dataset/dfs_step/0001` … `0008`
+- `OUTPUT_JSON_PATH` → `./dataset/rag_dataset.json`
 
-```bash
-python data_preparation/restore_step_valid.py data/dfs_step/ -o data/dfs_step_valid/
-```
-
-### 4. Build RAG Dataset
-
-Edit the path variables at the top of `dataset_construct_rag.py`:
-- `CSV_FILE` — path to your captions CSV (`cad_captions_0-500.csv`)
-- `STEP_FILE_DIRS` — list of directories containing DFS-restructured STEP files
-- `OUTPUT_JSON_PATH` — where to save the output JSON
-
-Then run:
+Run from the repo root:
 
 ```bash
 python data_preparation/dataset_construct_rag.py
 ```
 
-### 5. Train / Val / Test Split
+### 4. Train / Val / Test Split
 
-Edit the `open(...)` path and `output_dir` variable at the top of `data_split.py`,
-then run:
+Default paths in `data_split.py` read from `./dataset/rag_dataset.json` and
+write splits to `./dataset/abc_rag/train_val_test/`. Run from the repo root:
 
 ```bash
 python data_preparation/data_split.py
 ```
 
-This produces `train.json`, `test.json`, and `val.json` under the configured
-output directory, ready for `llama3_SFT_response.py`.
+This produces `train.json`, `test.json`, and `val.json` under
+`dataset/abc_rag/train_val_test/`, ready for `llama3_SFT_response.py`.
+
+### [Optional] Strip Annotations
+
+The `/* ... */` markers inserted by `step_restructurer.py` are valid STEP
+comments — the restructured files are directly usable for training **and** are
+loadable by CAD tools without any extra processing. Stripping is only needed
+if a specific tool explicitly rejects comments:
+
+```bash
+python data_preparation/restore_step_valid.py dataset/dfs_step/ -o dataset/dfs_step_clean/
+```
 
 ## Rendered CAD Images
 
@@ -113,17 +116,17 @@ separate dataset download (these are too large to include in the repository):
 
 | Split | Entity range | Location |
 |---|---|---|
-| Under-500 images | 0–500 entities | `data/abccad/step_under500_image/` |
-| 500–1000 images  | 500–1000 entities | `data/abccad/step_500-1000_image/` |
+| Under-500 images | 0–500 entities | `dataset/rendered_images/step_under500_image/` |
+| 500–1000 images  | 500–1000 entities | `dataset/rendered_images/step_500-1000_image/` |
 
 These images are used by `captioning.ipynb` to generate GPT-4o captions.
-Download links will be provided on the [HuggingFace dataset page](https://huggingface.co/datasets/JasonShiii/STEP-LLM-dataset).
+Download from the [HuggingFace dataset page](https://huggingface.co/datasets/JasonShiii/STEP-LLM-dataset).
 
 ## Notes
 
-- **Hardcoded paths:** `dataset_construct_rag.py` and `data_split.py` contain
-  absolute paths at the top of the file. Update these to your local paths
-  before running.
+- **Default paths:** All scripts default to paths under `dataset/` and can be
+  run from the repo root without editing. Override `CSV_FILE`, `STEP_FILE_DIRS`,
+  etc. at the top of each script if your layout differs.
 - **Entity count filtering:** The DATE paper uses STEP files with 0–500
   entities. Files with 500–1000 entities are used in ongoing journal work.
   `step_restructurer.py` processes any STEP file; filtering is done at the

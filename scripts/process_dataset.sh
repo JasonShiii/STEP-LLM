@@ -11,9 +11,9 @@ echo ""
 
 # Configuration
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_DIR="${DATA_DIR:-${PROJECT_ROOT}/data}"
+DATA_DIR="${DATA_DIR:-${PROJECT_ROOT}/dataset}"
 ABC_DIR="${DATA_DIR}/abccad"
-CAPTION_FILE="${CAPTION_FILE:-${DATA_DIR}/cad_captions.csv}"
+CAPTION_FILE="${CAPTION_FILE:-${PROJECT_ROOT}/dataset/cad_captions_0-500.csv}"
 
 # Check prerequisites
 if [ ! -d "${ABC_DIR}" ]; then

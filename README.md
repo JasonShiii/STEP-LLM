@@ -26,8 +26,11 @@ cad_codebased/
 ├── llama3_SFT_response.ipynb      # training notebook
 ├── requirements.txt
 ├── environment_minimal.yml
-├── cad_captions_0-500.csv         # released captions (0–500 entity STEP files)
-├── cad_captions_500-1000.csv      # released captions (500–1000 entity STEP files)
+├── dataset/                       # captions + place to download ABC dataset / images
+│   ├── cad_captions_0-500.csv     # released captions (0–500 entity STEP files)
+│   ├── cad_captions_500-1000.csv  # released captions (500–1000 entity STEP files)
+│   ├── abccad/                    # download ABC dataset here (not in repo)
+│   └── rendered_images/           # download rendered images here (not in repo)
 ├── data_preparation/              # full data processing pipeline
 │   ├── README.md                  # step-by-step pipeline instructions
 │   ├── round_step_numbers.py      # normalise STEP floating-point precision
@@ -116,8 +119,8 @@ python generate_step.py \
 python generate_step.py \
     --ckpt_path     ./checkpoints/step-llm-qwen3b \
     --use_rag \
-    --db_csv_path   ./cad_captions_0-500.csv \
-    --step_json_dir ./data/abc_rag/20500_dfs \
+    --db_csv_path   ./dataset/cad_captions_0-500.csv \
+    --step_json_dir ./dataset/abc_rag/20500_dfs \
     --caption       "A cylindrical bolt with a hexagonal head" \
     --save_dir      ./generated \
     --output_name   bolt.step
@@ -183,10 +186,10 @@ We release the GPT-4o generated captions for the ABC dataset:
 
 | File | Entity range | Description |
 |---|---|---|
-| `cad_captions_0-500.csv`    | 0–500 entities    | Captions used in the DATE paper |
-| `cad_captions_500-1000.csv` | 500–1000 entities | Captions for ongoing journal extension |
+| `dataset/cad_captions_0-500.csv`    | 0–500 entities    | Captions used in the DATE paper |
+| `dataset/cad_captions_500-1000.csv` | 500–1000 entities | Captions for ongoing journal extension |
 
-Columns: `model_id`, `description`, `isDescribable`
+Columns: `model_id`, `isDescribable`, `description`
 
 ### Rendered CAD Images
 
@@ -208,7 +211,7 @@ The released caption CSVs are included in this repo — you do **not** need thes
 from huggingface_hub import hf_hub_download
 hf_hub_download("JasonShiii/STEP-LLM-dataset",
                 "step_under500_image/abc_0001_step_v00_under500_image.zip",
-                repo_type="dataset", local_dir="./data")
+                repo_type="dataset", local_dir="./dataset/rendered_images")
 ```
 
 ### ABC Dataset (download separately)
@@ -221,7 +224,7 @@ bash scripts/download_abc_dataset.sh
 # or visit: https://archive.nyu.edu/handle/2451/43778
 ```
 
-Place downloaded chunks under `data/abccad/`.
+Place downloaded chunks under `dataset/abccad/`.
 
 ### Build the Full RAG Dataset
 
@@ -229,19 +232,18 @@ After downloading the ABC dataset and captions, the data preparation pipeline is
 
 ```bash
 # 1. Normalise floating-point precision in raw STEP files
-python data_preparation/round_step_numbers.py data/abccad/step_under500/ \
-    --output-dir data/rounded_step/
+python data_preparation/round_step_numbers.py dataset/abccad/step_under500/ \
+    --output-dir dataset/rounded_step/
 
 # 2. DFS reorder + annotate (eliminates forward references for LLM training)
-#    Edit SRC_BASE / DEST_BASE paths at the top of the script first:
+#    Annotated files are valid STEP and training-ready — no stripping needed.
+#    Edit SRC_BASE / DEST_BASE at the top of the script first:
 bash data_preparation/batch_restructure.sh
 
 # 3. Build RAG dataset (pairs each STEP file with a FAISS-retrieved similar example)
-#    Edit CSV_FILE / STEP_FILE_DIRS / OUTPUT_JSON_PATH at the top first:
 python data_preparation/dataset_construct_rag.py
 
 # 4. Split into train / val / test
-#    Edit the input/output paths at the top first:
 python data_preparation/data_split.py
 ```
 
