@@ -46,7 +46,7 @@ def compute_metrics(query_embedding, retrieved_embeddings):
 
 # Main function
 def main():
-    csv_file = '/home/group/cad_codebased/cad_captions_old.csv'  # Path to your CSV file
+    csv_file = './cad_captions_0-500.csv'  # Path to your captions CSV file
     query_caption = "A rectangular prism"  # Your query
 
     # Load data

@@ -4,7 +4,7 @@ import random
 from datasets import load_dataset
 
 # Load the dataset
-with open('/home/group/cad_codebased/data/rag_abc_dataset_20500_dfs_500-1000.json', 'r') as file:
+with open('./data/rag_dataset.json', 'r') as file:
     data = json.load(file)
 
 # Shuffle the data
@@ -22,7 +22,7 @@ test_data = data[train_len:train_len + test_len]
 val_data = data[train_len + test_len:]
 
 # Create output directory if it doesn't exist
-output_dir = '/home/group/cad_codebased/data/abc_rag/20500_dfs_500-1000'
+output_dir = './data/abc_rag/train_val_test'
 os.makedirs(output_dir, exist_ok=True)
 
 # Save the split datasets

@@ -6,40 +6,27 @@ import faiss
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# File Paths
-CSV_FILE = "/home/group/cad_codebased/medium_8000_simple.csv" 
-# STEP_FILE_DIRS = [
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0001_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0002_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0003_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0004_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0005_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0006_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0007_step_v00_under500",
-#     "/home/group/cad_codebased/data/abccad/step_under500/abc_0008_step_v00_under500"
-# ]
+# ── File Paths — UPDATE THESE to match your local setup ─────────────────────
+# Use cad_captions_0-500.csv for the DATE 2026 paper dataset (0–500 entities)
+CSV_FILE = "./cad_captions_0-500.csv"
+# UPDATE STEP_FILE_DIRS to point to your DFS-restructured STEP file directories.
+# After running batch_restructure.sh, your files should be under data/dfs_step/.
+# Example for the DATE paper (0–500 entity files, chunks 0001–0008):
 STEP_FILE_DIRS = [
-    "/home/group/cad_codebased/data/dfs_step/0001",
-    "/home/group/cad_codebased/data/dfs_step/0002",
-    "/home/group/cad_codebased/data/dfs_step/0003",
-    "/home/group/cad_codebased/data/dfs_step/0004",
-    "/home/group/cad_codebased/data/dfs_step/0005",
-    "/home/group/cad_codebased/data/dfs_step/0006",
-    "/home/group/cad_codebased/data/dfs_step/0007",
-    "/home/group/cad_codebased/data/dfs_step/0008",
-
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0001",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0002",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0003",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0004",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0005",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0006",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0007",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0008",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0009",
-    "/home/group/cad_codebased/data/dfs_step_500-1000_round/0010",
+    "./data/dfs_step/0001",
+    "./data/dfs_step/0002",
+    "./data/dfs_step/0003",
+    "./data/dfs_step/0004",
+    "./data/dfs_step/0005",
+    "./data/dfs_step/0006",
+    "./data/dfs_step/0007",
+    "./data/dfs_step/0008",
+    # Add 500-1000 entity dirs here for the journal extension:
+    # "./data/dfs_step_500-1000_round/0001",
+    # ...
+    # "./data/dfs_step_500-1000_round/0010",
 ]
-OUTPUT_JSON_PATH = "/home/group/cad_codebased/data/medium_8000_simple.json"
+OUTPUT_JSON_PATH = "./data/rag_dataset.json"
 
 # Step 1: Load captions from CSV
 def load_data(csv_file):

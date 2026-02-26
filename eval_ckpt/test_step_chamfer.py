@@ -92,10 +92,9 @@ def test_with_real_files():
     print("Testing with real STEP files...")
     
     # Look for STEP files in the expected directory structure
+    # UPDATE these paths to directories containing generated STEP files to evaluate:
     test_dirs = [
-        "/home/group/cad_codebased/data/STEP_generated/rag_new",
-        "/home/group/cad_codebased/data/STEP_generated/rag_raw_10800",
-        "/home/group/cad_codebased/data/STEP_generated/rag_dfs"
+        "./data/STEP_generated/eval_output",
     ]
     
     step_files = []

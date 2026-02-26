@@ -63,13 +63,13 @@ Examples:
   python check_renderability.py file.step --require-all-roots --verify-trimesh-faces
   
   # Batch check dfs_step directory (checks all STEP files)
-  python check_renderability.py --batch /home/group/cad_codebased/data/dfs_step
-  
+  python check_renderability.py --batch ./data/dfs_step
+
   # Batch check STEP_generated directory (only checks 'gen' subfolders)
-  python check_renderability.py --batch /home/group/cad_codebased/data/STEP_generated/rag_reorder_round
-  
+  python check_renderability.py --batch ./data/STEP_generated/eval_output
+
   # Batch check with custom output file
-  python check_renderability.py --batch /home/group/cad_codebased/data/reordered_step --output report.json
+  python check_renderability.py --batch ./data/dfs_step --output report.json
   
   # Batch check with custom timeout
   python check_renderability.py --batch /path/to/directory --timeout 60

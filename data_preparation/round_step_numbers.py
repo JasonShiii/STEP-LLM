@@ -23,7 +23,7 @@ python round_step_numbers.py data/reordered_step/0002
 python round_step_numbers.py data/reordered_step
 
 Output:
-    Processed files are saved under /home/group/cad_codebased/data/reorder_round_step
+    Processed files are saved under ./data/reorder_round_step (configurable via --output-dir)
     maintaining the same directory structure as input.
 """
 
@@ -187,8 +187,8 @@ def main():
     )
     parser.add_argument(
         "--output-dir",
-        default="/home/group/cad_codebased/data/reorder_round_step",
-        help="Output directory (default: /home/group/cad_codebased/data/reorder_round_step)"
+        default="./data/reorder_round_step",
+        help="Output directory (default: ./data/reorder_round_step)"
     )
     
     args = parser.parse_args()

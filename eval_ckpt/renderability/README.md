@@ -56,17 +56,17 @@ python check_renderability.py /path/to/file.step --require-all-roots --verify-tr
 
 **Batch check dfs_step directory (checks all STEP files):**
 ```bash
-python check_renderability.py --batch /home/group/cad_codebased/data/dfs_step
+python check_renderability.py --batch ./data/dfs_step
 ```
 
 **Batch check STEP_generated directory (only checks 'gen' subfolders):**
 ```bash
-python check_renderability.py --batch /home/group/cad_codebased/data/STEP_generated/rag_reorder_round
+python check_renderability.py --batch ./data/STEP_generated/eval_output
 ```
 
 **Batch check with custom output file:**
 ```bash
-python check_renderability.py --batch /home/group/cad_codebased/data/reordered_step --output step_analysis.json
+python check_renderability.py --batch ./data/dfs_step --output step_analysis.json
 ```
 
 **Batch check with custom timeout:**
@@ -148,7 +148,7 @@ python check_renderability.py --batch /path/to/directory --timeout 60
 ```json
 {
   "batch_info": {
-    "input_directory": "/home/group/cad_codebased/data/dfs_step",
+    "input_directory": "./data/dfs_step",
     "start_time": "2025-08-09T18:20:09.160058",
     "end_time": "2025-08-09T18:20:10.818536",
     "total_duration_minutes": 0.028,
@@ -187,7 +187,7 @@ python check_renderability.py --batch /path/to/directory --timeout 60
       "with_trimesh_faces": 60,
       "failed_files": [
         {
-          "file_path": "/home/group/cad_codebased/data/dfs_step/0001/00010007/file.step",
+          "file_path": "./data/dfs_step/0001/00010007/file.step",
           "relative_path": "0001/00010007/file.step",
           "reason": "read_failed",
           "status": "error"

@@ -54,10 +54,9 @@ def calculate_complete_ratio(base_dir, ckpt_path, save_csv_path):
 
 
 if __name__ == "__main__":
-    # base_dir = "/home/group/cad_codebased/data/STEP_generated/rag/eval_batch400_ckpt-3668"
-    base_dir = "/home/group/cad_codebased/data/STEP_generated/rag_reorder_round/eval_ckpt-5400"
-    # ckpt_path = "/home/group/cad_codebased/data/SFT_ckpt/ckpt_outputs_response_rag/10500/ckpt_epoch1_30/checkpoint-3668"
-    ckpt_path = "/home/group/cad_codebased/data/SFT_ckpt/ckpt_outputs_reorder_round/checkpoint-5400"
-    save_csv_path = "/home/group/cad_codebased/eval_ckpt/CR/CR_ckpts_rr_copy.csv"
+    # UPDATE these paths to match your local setup:
+    base_dir = "./data/STEP_generated/eval_output"       # directory with generated STEP files
+    ckpt_path = "./checkpoints/step-llm-qwen3b"          # checkpoint path (for logging)
+    save_csv_path = "./eval_ckpt/CR/CR_results.csv"      # output CSV
 
     calculate_complete_ratio(base_dir, ckpt_path, save_csv_path)

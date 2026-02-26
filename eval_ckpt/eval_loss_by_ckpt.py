@@ -15,11 +15,12 @@ max_seq_length = 16384 # Choose any! We auto support RoPE Scaling internally!
 dtype = None # None for auto detection. Float16 for Tesla T4, V100, Bfloat16 for Ampere+
 load_in_4bit = False # Use 4bit quantization to reduce memory usage. Can be False.
 
-checkpoint_path = "/home/group/cad_codebased/data/SFT_ckpt/ckpt_outputs_improved_caption/ckpt_colab/checkpoint-9000" # 
-log_csv = "/home/group/cad_codebased/training_log/eval_loss_new_caption.csv"
+# UPDATE these paths to match your local setup:
+checkpoint_path = "./checkpoints/step-llm-qwen3b"       # path to LoRA adapter or merged model
+log_csv = "./eval_ckpt/eval_loss.csv"                   # output CSV for eval loss
 
 model, tokenizer = FastLanguageModel.from_pretrained(
-    # model_name = "/home/group/cad_codebased/llama_3.2/Llama_3.2_3B", # or choose "unsloth/Llama-3.2-1B-Instruct"
+    # model_name = "unsloth/Llama-3.2-3B-Instruct",  # or local path to base model
     model_name = checkpoint_path,
     max_seq_length = max_seq_length,
     dtype = dtype,
@@ -71,8 +72,8 @@ ABC_prompt_no_rag = """You are a CAD model generation assistant trained to produ
 
 EOS_TOKEN = tokenizer.eos_token # Must add EOS_TOKEN
 
-dataset = load_dataset(path="/home/group/cad_codebased/data/abc_rag/20500", split="train")
-test_dataset = load_dataset(path="/home/group/cad_codebased/data/abc_rag/20500", split="test")
+dataset = load_dataset(path="./data/abc_rag/train_val_test", split="train")
+test_dataset = load_dataset(path="./data/abc_rag/train_val_test", split="test")
 
 # Process dataset without calling a separate function
 if use_rag:

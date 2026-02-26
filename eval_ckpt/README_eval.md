@@ -217,7 +217,7 @@ cd ./eval_ckpt/Shape
 - Run `generate_step_ckpt.py` later on the rest of ckpts to generate STEP files that have the same model_id of the first batch.
 
 ## 5. Batch Process the STEP Files to Point Clouds
-Refer to `/home/group/cad_codebased/eval_ckpt/Shape/README_batch_conversion.md` to check the details of converting ckpt's generated STEP file to point clouds for ckpt evaluation.
+Refer to `eval_ckpt/Shape/README_batch_conversion.md` to check the details of converting ckpt's generated STEP file to point clouds for ckpt evaluation.
 
 
 
@@ -229,7 +229,7 @@ Thus, we restructrue the step file to realize:
 - **Similar Entity Clustering**: Under the premise of satisfying the dependency topology, try to cluster entities of the same type together as much as possible (optional).
 - **renumber entity ID**: remap entity IDs starting with '#' to a continuous increasing sequence starting from '# 1'.
 
-See: `/home/group/cad_codebased/reorder_step.py`
+See: `data_preparation/step_restructurer.py`
 
 
 
