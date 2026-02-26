@@ -190,15 +190,26 @@ Columns: `model_id`, `description`, `isDescribable`
 
 ### Rendered CAD Images
 
-We provide rendered multi-view images of the ABC Dataset STEP files used in
-this project. These are used by `data_preparation/captioning.ipynb` to generate
-GPT-4o captions. Download links are available on the
-[HuggingFace dataset page](https://huggingface.co/datasets/JasonShiii/STEP-LLM-dataset):
+We provide rendered multi-view images of the ABC Dataset STEP files, hosted on HuggingFace:
 
-| Split | Entity range | Description |
-|---|---|---|
-| `step_under500_image/`   | 0–500 entities    | Images for DATE 2026 paper (this release) |
-| `step_500-1000_image/`   | 500–1000 entities | Images for ongoing journal extension |
+**[JasonShiii/STEP-LLM-dataset](https://huggingface.co/datasets/JasonShiii/STEP-LLM-dataset)**
+
+| Folder | Entity range | # Models | Description |
+|---|---|---|---|
+| `step_under500_image/` | 0–500 entities | ~20k | Images for DATE 2026 paper (this release) |
+| `step_500-1000_image/` | 500–1000 entities | ~17k | Images for ongoing journal extension |
+
+Each folder has 10 per-chunk zip files (~25 MB each for under-500, ~75–85 MB for 500–1000).
+These images were used with GPT-4o to generate captions (`data_preparation/captioning.ipynb`).
+The released caption CSVs are included in this repo — you do **not** need these images to run inference or reproduce training.
+
+```python
+# Download a single chunk via Python:
+from huggingface_hub import hf_hub_download
+hf_hub_download("JasonShiii/STEP-LLM-dataset",
+                "step_under500_image/abc_0001_step_v00_under500_image.zip",
+                repo_type="dataset", local_dir="./data")
+```
 
 ### ABC Dataset (download separately)
 
