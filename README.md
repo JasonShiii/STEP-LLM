@@ -331,11 +331,6 @@ See `eval_ckpt/README_eval.md` and `eval_ckpt/README_step_chamfer_reward.md`.
 
 ## Important Notes
 
-> **Hardcoded paths:** Several scripts (`data_preparation/dataset_construct_rag.py`,
-> `data_preparation/data_split.py`, `retrieval.py`, etc.) still contain hardcoded
-> absolute paths. Update these to match your local setup before running.
-> See `data_preparation/README.md` for guidance.
-
 > **CUDA requirement:** Inference and training require an NVIDIA GPU.
 > STEP files can be very long (up to 16k tokens), so at least 16 GB VRAM
 > is recommended for inference, and 24 GB+ for training.
