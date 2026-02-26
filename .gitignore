@@ -133,9 +133,15 @@ coverage.xml
 # Project-specific exclusions
 # =============================================================================
 
-# Internal / development-only tools
+# Internal / development-only tools (analysis scripts — preprocessing moved to data_preparation/)
 reserialize/
 reserialize
+
+# Token-count filtering utilities (internal; dataset not redistributed)
+data_filter_long/
+
+# Rendering helper script (render_step.py removed; rendered images released as separate dataset)
+run_render_with_xvfb.sh
 
 # Evaluation: Shape subdir is an embedded git repo with a full CUDA installation
 eval_ckpt/Shape/
