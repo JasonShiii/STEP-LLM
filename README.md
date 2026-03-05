@@ -16,46 +16,6 @@ STEP-LLM fine-tunes compact LLMs (Llama-3.2-3B and Qwen2.5-3B) to generate valid
 | **Inference** | Generate STEP files with optional FAISS-based retrieval (`generate_step.py`) |
 | **Evaluation** | Chamfer distance, Complete Ratio, renderability metrics |
 
-## Project Structure
-
-```
-cad_codebased/
-├── generate_step.py               # main inference entry point (argparse CLI)
-├── retrieval.py                   # FAISS-based semantic retrieval
-├── llama3_SFT_response.py         # training script (reference; see also .ipynb)
-├── llama3_SFT_response.ipynb      # training notebook
-├── requirements.txt
-├── environment_minimal.yml
-├── dataset/                       # captions + place to download ABC dataset / images
-│   ├── cad_captions_0-500.csv     # released captions (0–500 entity STEP files)
-│   ├── cad_captions_500-1000.csv  # released captions (500–1000 entity STEP files)
-│   ├── abccad/                    # download ABC dataset here (not in repo)
-│   └── rendered_images/           # download rendered images here (not in repo)
-├── data_preparation/              # full data processing pipeline
-│   ├── README.md                  # step-by-step pipeline instructions
-│   ├── round_step_numbers.py      # normalise STEP floating-point precision
-│   ├── step_restructurer.py       # DFS reorder + structural annotations
-│   ├── batch_restructure.sh       # batch wrapper for step_restructurer.py
-│   ├── restore_step_valid.py      # strip annotations → valid STEP file
-│   ├── dataset_construct_rag.py   # build RAG training dataset (FAISS retrieval)
-│   ├── data_split.py              # split dataset into train / val / test
-│   └── captioning.ipynb           # GPT-4o captioning notebook
-├── scripts/
-│   ├── download_checkpoints.sh    # download released LoRA adapters
-│   ├── merge_lora_adapter.py      # merge LoRA adapter into base model
-│   ├── setup.sh                   # one-command environment setup
-│   ├── download_abc_dataset.sh    # download ABC dataset
-│   ├── download_base_models.sh    # download Llama / Qwen base models
-│   └── process_dataset.sh         # full data processing pipeline
-├── examples/
-│   ├── basic_inference.py         # simple text → STEP example
-│   └── rag_inference.py           # RAG-augmented generation example
-├── eval_ckpt/
-│   ├── step_chamfer_reward.py     # Chamfer distance evaluation
-│   ├── eval_loss_by_ckpt.py       # checkpoint loss evaluation
-│   └── ...
-└── data_filter_long/              # token-count filtering tools
-```
 
 ---
 
