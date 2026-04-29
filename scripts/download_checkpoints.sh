@@ -3,7 +3,7 @@
 #
 # Two checkpoints are released:
 #   - step-llm-llama3b : trained on Llama-3.2-3B-Instruct  (checkpoint-7200)
-#   - step-llm-qwen3b  : trained on Qwen2.5-3B-Instruct    (checkpoint-9000)
+#   - step-llm-qwen3b  : trained on Qwen2.5-3B             (checkpoint-9000)
 #
 # After downloading, you can either:
 #   (a) Use the adapter directly — point --ckpt_path at the adapter dir
@@ -66,6 +66,6 @@ echo "  python generate_step.py --ckpt_path $DEST_DIR/step-llm-qwen3b --caption 
 echo ""
 echo "  # Or merge with the base model first:"
 echo "  python scripts/merge_lora_adapter.py \\"
-echo "      --base_model_path Qwen/Qwen2.5-3B-Instruct \\"
+echo "      --base_model_path Qwen/Qwen2.5-3B \\"
 echo "      --adapter_path    $DEST_DIR/step-llm-qwen3b \\"
 echo "      --output_path     ./merged_model/step-llm-qwen3b-merged"
