@@ -53,11 +53,10 @@ We release two LoRA adapters (~150 MB each):
 
 | Model | Base | HuggingFace |
 |---|---|---|
-| STEP-LLM-Llama3B | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) *(coming soon)* |
-| STEP-LLM-Qwen3B  | Qwen2.5-3B-Instruct   | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) *(coming soon)* |
+| STEP-LLM-Llama3B | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) |
+| STEP-LLM-Qwen3B  | Qwen2.5-3B-Instruct   | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) |
 
 ```bash
-# Fill in the HuggingFace repo IDs in scripts/download_checkpoints.sh, then:
 bash scripts/download_checkpoints.sh        # both adapters
 bash scripts/download_checkpoints.sh qwen   # Qwen only
 bash scripts/download_checkpoints.sh llama  # Llama only

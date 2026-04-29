@@ -50,27 +50,11 @@ download_gh() {
 # ─────────────────────────────────────────────────────────────────────────────
 
 if [[ "$MODEL" == "llama" || "$MODEL" == "both" ]]; then
-    # --- HuggingFace (uncomment and fill in after uploading) ---
-    # download_hf "JasonShiii/step-llm-llama3b" "$DEST_DIR/step-llm-llama3b"
-
-    # --- GitHub Releases (uncomment and fill in after creating release) ---
-    # download_gh \
-    #   "https://github.com/JasonShiii/STEP-LLM/releases/download/v1.0/step-llm-llama3b.zip" \
-    #   "$DEST_DIR/step-llm-llama3b"
-
-    echo "[Llama] Checkpoint coming soon — see https://huggingface.co/JasonShiii/step-llm-llama3b"
+    download_hf "JasonShiii/step-llm-llama3b" "$DEST_DIR/step-llm-llama3b"
 fi
 
 if [[ "$MODEL" == "qwen" || "$MODEL" == "both" ]]; then
-    # --- HuggingFace (uncomment once uploaded) ---
-    # download_hf "JasonShiii/step-llm-qwen3b" "$DEST_DIR/step-llm-qwen3b"
-
-    # --- GitHub Releases (uncomment once a release is created) ---
-    # download_gh \
-    #   "https://github.com/JasonShiii/STEP-LLM/releases/download/v1.0/step-llm-qwen3b.zip" \
-    #   "$DEST_DIR/step-llm-qwen3b"
-
-    echo "[Qwen] Checkpoint coming soon — see https://huggingface.co/JasonShiii/step-llm-qwen3b"
+    download_hf "JasonShiii/step-llm-qwen3b" "$DEST_DIR/step-llm-qwen3b"
 fi
 
 echo ""
