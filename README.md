@@ -40,8 +40,8 @@ conda install -c conda-forge pythonocc-core -y   # for STEP file processing
 ### 2. Download Base Model
 
 ```bash
-# Option A — Qwen2.5-3B-Instruct (recommended)
-huggingface-cli download Qwen/Qwen2.5-3B-Instruct --local-dir ./models/Qwen2.5-3B-Instruct
+# Option A — Qwen2.5-3B (recommended)
+huggingface-cli download Qwen/Qwen2.5-3B --local-dir ./models/Qwen2.5-3B
 
 # Option B — Llama-3.2-3B-Instruct (requires Meta access token)
 huggingface-cli download meta-llama/Llama-3.2-3B-Instruct --local-dir ./models/Llama-3.2-3B-Instruct
@@ -54,7 +54,7 @@ We release two LoRA adapters (~150 MB each):
 | Model | Base | HuggingFace |
 |---|---|---|
 | STEP-LLM-Llama3B | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) |
-| STEP-LLM-Qwen3B  | Qwen2.5-3B-Instruct   | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) |
+| STEP-LLM-Qwen3B  | Qwen2.5-3B   | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) |
 
 ```bash
 bash scripts/download_checkpoints.sh        # both adapters
@@ -99,7 +99,7 @@ sizes small (~150 MB vs ~6 GB) and respects base model licenses.
 | Checkpoint | Base model | Training data | Steps |
 |---|---|---|---|
 | step-llm-llama3b | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 7200 |
-| step-llm-qwen3b  | Qwen2.5-3B-Instruct   | ~20k STEP files, 0–500 entities | 9000 |
+| step-llm-qwen3b  | Qwen2.5-3B   | ~20k STEP files, 0–500 entities | 9000 |
 
 ### Merge LoRA Adapter (optional)
 
@@ -108,7 +108,7 @@ PEFT dependency at inference time:
 
 ```bash
 python scripts/merge_lora_adapter.py \
-    --base_model_path Qwen/Qwen2.5-3B-Instruct \
+    --base_model_path Qwen/Qwen2.5-3B \
     --adapter_path    ./checkpoints/step-llm-qwen3b \
     --output_path     ./merged_model/step-llm-qwen3b-merged
 
