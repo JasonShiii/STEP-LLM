@@ -49,17 +49,24 @@ huggingface-cli download meta-llama/Llama-3.2-3B-Instruct --local-dir ./models/L
 
 ### 3. Download Fine-tuned LoRA Adapters
 
-We release two LoRA adapters (~150 MB each):
+We release three LoRA adapters (~150 MB each). RAG and no-RAG variants were
+trained with different prompt templates and are **not interchangeable** — pick
+the variant that matches how you'll run inference:
 
-| Model | Base | HuggingFace |
-|---|---|---|
-| STEP-LLM-Llama3B | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) |
-| STEP-LLM-Qwen3B  | Qwen2.5-3B   | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) |
+| Model | Mode | Base | HuggingFace |
+|---|---|---|---|
+| STEP-LLM-Llama3B        | RAG    | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) |
+| STEP-LLM-Llama3B-no_rag | no-RAG | Llama-3.2-3B-Instruct | [JasonShiii/step-llm-llama3b-no_rag](https://huggingface.co/JasonShiii/step-llm-llama3b-no_rag) |
+| STEP-LLM-Qwen3B         | RAG    | Qwen2.5-3B            | [JasonShiii/step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b) |
+
+A no-RAG Qwen variant is not released; use the Llama no-RAG adapter for
+RAG-free generation.
 
 ```bash
-bash scripts/download_checkpoints.sh        # both adapters
-bash scripts/download_checkpoints.sh qwen   # Qwen only
-bash scripts/download_checkpoints.sh llama  # Llama only
+bash scripts/download_checkpoints.sh               # all three adapters
+bash scripts/download_checkpoints.sh llama         # Llama (RAG) only
+bash scripts/download_checkpoints.sh llama-no-rag  # Llama (no-RAG) only
+bash scripts/download_checkpoints.sh qwen          # Qwen (RAG) only
 ```
 
 > The adapters can be used directly at inference time without merging.
@@ -68,9 +75,9 @@ bash scripts/download_checkpoints.sh llama  # Llama only
 ### 4. Run Inference
 
 ```bash
-# Without RAG (simplest):
+# Without RAG (simplest) — use the no-RAG adapter:
 python generate_step.py \
-    --ckpt_path ./checkpoints/step-llm-qwen3b \
+    --ckpt_path ./checkpoints/step-llm-llama3b-no_rag \
     --caption   "A cylindrical bolt with a hexagonal head" \
     --save_dir  ./generated
 
@@ -96,10 +103,11 @@ See `python generate_step.py --help` for all options.
 The released checkpoints are LoRA adapters, not full models. This keeps file
 sizes small (~150 MB vs ~6 GB) and respects base model licenses.
 
-| Checkpoint | Base model | Training data | Steps |
-|---|---|---|---|
-| step-llm-llama3b | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 7200 |
-| step-llm-qwen3b  | Qwen2.5-3B   | ~20k STEP files, 0–500 entities | 9000 |
+| Checkpoint | Mode | Base model | Training data | Steps |
+|---|---|---|---|---|
+| step-llm-llama3b        | RAG    | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 7200 |
+| step-llm-llama3b-no_rag | no-RAG | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 6300 |
+| step-llm-qwen3b         | RAG    | Qwen2.5-3B            | ~20k STEP files, 0–500 entities | 9000 |
 
 ### Merge LoRA Adapter (optional)
 

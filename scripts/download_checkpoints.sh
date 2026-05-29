@@ -1,22 +1,29 @@
 #!/bin/bash
 # Download STEP-LLM LoRA adapter checkpoints
 #
-# Two checkpoints are released:
-#   - step-llm-llama3b : trained on Llama-3.2-3B-Instruct  (checkpoint-7200)
-#   - step-llm-qwen3b  : trained on Qwen2.5-3B             (checkpoint-9000)
+# Three checkpoints are released:
+#   - step-llm-llama3b         : Llama-3.2-3B-Instruct, RAG    (checkpoint-7200)
+#   - step-llm-llama3b-no_rag  : Llama-3.2-3B-Instruct, no-RAG (checkpoint-6300)
+#   - step-llm-qwen3b          : Qwen2.5-3B,             RAG    (checkpoint-9000)
+#
+# RAG and no-RAG variants were trained with different prompt templates and are
+# NOT interchangeable — pick the variant that matches how you'll run inference.
+# The Qwen no-RAG variant is not released; use the Llama no-RAG adapter for
+# RAG-free generation.
 #
 # After downloading, you can either:
 #   (a) Use the adapter directly — point --ckpt_path at the adapter dir
 #   (b) Merge into a full model  — run scripts/merge_lora_adapter.py
 #
 # Usage:
-#   bash scripts/download_checkpoints.sh            # downloads both
-#   bash scripts/download_checkpoints.sh llama      # Llama only
-#   bash scripts/download_checkpoints.sh qwen       # Qwen only
+#   bash scripts/download_checkpoints.sh                   # downloads all three
+#   bash scripts/download_checkpoints.sh llama             # Llama RAG only
+#   bash scripts/download_checkpoints.sh llama-no-rag      # Llama no-RAG only
+#   bash scripts/download_checkpoints.sh qwen              # Qwen RAG only
 
 set -e
 
-MODEL=${1:-"both"}   # "llama", "qwen", or "both"
+MODEL=${1:-"all"}   # "llama", "llama-no-rag", "qwen", or "all"
 DEST_DIR="./checkpoints"
 
 mkdir -p "$DEST_DIR"
@@ -49,11 +56,15 @@ download_gh() {
 
 # ─────────────────────────────────────────────────────────────────────────────
 
-if [[ "$MODEL" == "llama" || "$MODEL" == "both" ]]; then
+if [[ "$MODEL" == "llama" || "$MODEL" == "all" || "$MODEL" == "both" ]]; then
     download_hf "JasonShiii/step-llm-llama3b" "$DEST_DIR/step-llm-llama3b"
 fi
 
-if [[ "$MODEL" == "qwen" || "$MODEL" == "both" ]]; then
+if [[ "$MODEL" == "llama-no-rag" || "$MODEL" == "all" || "$MODEL" == "both" ]]; then
+    download_hf "JasonShiii/step-llm-llama3b-no_rag" "$DEST_DIR/step-llm-llama3b-no_rag"
+fi
+
+if [[ "$MODEL" == "qwen" || "$MODEL" == "all" || "$MODEL" == "both" ]]; then
     download_hf "JasonShiii/step-llm-qwen3b" "$DEST_DIR/step-llm-qwen3b"
 fi
 
