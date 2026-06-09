@@ -1,4 +1,4 @@
-[![arXiv](https://img.shields.io/badge/arXiv-2601.12641-b31b1b.svg)](https://arxiv.org/abs/2601.12641)
+[![arXiv](https://img.shields.io/badge/arXiv-2601.12641-b31b1b.svg)](https://arxiv.org/abs/2601.12641) [![DATE 2026](https://img.shields.io/badge/DATE-2026-blue.svg)](https://past.date-conference.com/proceedings-archive/2026/DATA/1319.pdf)
 
 # STEP-LLM (official)
 
