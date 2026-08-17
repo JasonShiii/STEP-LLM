@@ -1,48 +1,74 @@
-# Model Card: CAD Text-to-STEP Generation
+# Model Card: STEP-LLM
 
 ## Model Details
 
 ### Model Description
 
-A fine-tuned language model for generating CAD models in STEP format from natural language descriptions.
+STEP-LLM fine-tunes compact LLMs to generate valid ISO 10303-21 STEP files
+directly from natural language descriptions, with optional Retrieval-Augmented
+Generation (RAG) for improved accuracy.
 
-- **Developed by**: [Your Name/Organization]
-- **Model type**: Autoregressive Language Model with LoRA fine-tuning
-- **Language**: English (input), STEP (output)
-- **License**: MIT (code), [Specify for model weights]
-- **Base Model**: Qwen2.5-3B-Instruct / Llama-3.2-3B
-- **Fine-tuning Method**: LoRA (Low-Rank Adaptation)
-- **Training Data**: ABC CAD Dataset with generated captions
+- **Developed by**: Xiangyu Shi, Junyang Ding, Xu Zhao, Sinong Zhan, Payal Mohapatra, Daniel Quispe, Kojo Welbeck, Jian Cao, Wei Chen, Ping Guo, Qi Zhu (Northwestern University)
+- **Model type**: Autoregressive language model with LoRA fine-tuning
+- **Language**: English (input), STEP / ISO 10303-21 (output)
+- **License**: MIT (code). Model weights are LoRA adapters and inherit the
+  license of their base model — [Llama 3.2 Community License](https://github.com/meta-llama/llama-models/blob/main/models/llama3_2/LICENSE)
+  for the Llama variants, [Qwen Research License](https://huggingface.co/Qwen/Qwen2.5-3B/blob/main/LICENSE)
+  for the Qwen variant (note: Qwen2.5-**3B** is not Apache 2.0, unlike most other Qwen2.5 sizes).
+- **Base models**: Llama-3.2-3B-Instruct / Qwen2.5-3B
+- **Fine-tuning method**: LoRA (Low-Rank Adaptation) via [Unsloth](https://github.com/unslothai/unsloth)
+- **Training data**: ABC CAD Dataset with GPT-4o generated captions
 
 ### Model Sources
 
-- **Repository**: [GitHub URL]
-- **Paper**: [ArXiv/Paper link if available]
-- **Demo**: [Demo link if available]
-- **LoRA Adapter**: [HuggingFace/Release URL]
+- **Repository**: https://github.com/JasonShiii/STEP-LLM
+- **Paper**: [DATE 2026](https://past.date-conference.com/proceedings-archive/2026/DATA/1319.pdf) · [arXiv:2601.12641](https://arxiv.org/abs/2601.12641)
+- **LoRA adapters**: [step-llm-llama3b](https://huggingface.co/JasonShiii/step-llm-llama3b) · [step-llm-llama3b-no_rag](https://huggingface.co/JasonShiii/step-llm-llama3b-no_rag) · [step-llm-qwen3b](https://huggingface.co/JasonShiii/step-llm-qwen3b)
+
+### Released Checkpoints
+
+| Checkpoint | Mode | Base model | Training data | Steps |
+|---|---|---|---|---|
+| step-llm-llama3b        | RAG    | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 7200 |
+| step-llm-llama3b-no_rag | no-RAG | Llama-3.2-3B-Instruct | ~20k STEP files, 0–500 entities | 6300 |
+| step-llm-qwen3b         | RAG    | Qwen2.5-3B            | ~20k STEP files, 0–500 entities | 9000 |
+
+The released checkpoints are LoRA adapters (~150 MB each), not full models.
+
+> **RAG and no-RAG checkpoints are not interchangeable.** They were trained with
+> different prompt templates. Running a RAG checkpoint without retrieval (or
+> vice versa) puts the model off-distribution and degrades output quality.
 
 ## Uses
 
 ### Direct Use
 
-Generate STEP files (CAD models) from natural language descriptions:
+Generate STEP files from natural language descriptions. Use the provided entry
+point rather than calling the model directly — it applies the exact prompt
+template the checkpoints were trained on and reattaches the STEP header:
+
+```bash
+# Without RAG — use the no-RAG adapter:
+python generate_step.py \
+    --ckpt_path ./checkpoints/step-llm-llama3b-no_rag \
+    --caption   "A cylindrical bolt with a hexagonal head" \
+    --save_dir  ./generated
+
+# With RAG — use a RAG adapter:
+python generate_step.py \
+    --ckpt_path     ./checkpoints/step-llm-qwen3b \
+    --use_rag \
+    --db_csv_path   ./dataset/cad_captions_0-500.csv \
+    --step_json_dir ./dataset/abc_rag/train_val_test \
+    --caption       "A cylindrical bolt with a hexagonal head" \
+    --save_dir      ./generated
+```
+
+The prompt templates live in `generate_step.py` and are byte-identical to those
+in `llama3_SFT_response.py`. If you build your own inference loop, reuse them:
 
 ```python
-from unsloth import FastLanguageModel
-
-# Load model
-model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name="path/to/merged_model",
-    max_seq_length=4096,
-    dtype=None,
-    load_in_4bit=True
-)
-
-# Generate
-prompt = "A rectangular bracket with four mounting holes"
-inputs = tokenizer(prompt, return_tensors="pt")
-outputs = model.generate(**inputs, max_new_tokens=2048)
-step_file = tokenizer.decode(outputs[0])
+from generate_step import ABC_PROMPT_RAG, ABC_PROMPT_NO_RAG, STEP_HEADER
 ```
 
 ### Downstream Use
@@ -56,234 +82,165 @@ step_file = tokenizer.decode(outputs[0])
 
 - High-precision engineering applications (token-based representation limits precision)
 - Safety-critical CAD design (requires human verification)
-- Production-ready models without validation
+- Production use without validation
 - Non-mechanical domains (trained on mechanical parts)
 
 ## Bias, Risks, and Limitations
 
 ### Known Limitations
 
-1. **Geometric Precision**: Token-based representation may introduce small numerical errors
-2. **Complexity**: Best for models with < 2000 tokens; very complex assemblies may fail
-3. **Domain**: Optimized for mechanical parts; other domains (architecture, organic shapes) may be suboptimal
-4. **Dimensions**: Generated dimensions may not match exact specifications in prompt
-5. **Validation**: Generated STEP files should be validated before use
+1. **Geometric precision**: Token-based representation may introduce small numerical errors.
+2. **Complexity**: Trained on models with 0–500 STEP entities; very complex assemblies may fail.
+3. **Sequence length**: STEP files are long. Generation is capped at 16384 tokens of context; longer models get truncated.
+4. **Domain**: Optimised for mechanical parts; architecture and organic shapes are out of distribution.
+5. **Dimensions**: Generated dimensions may not match the exact specifications in the prompt.
+6. **Validation**: Generated STEP files should be validated in CAD software before use.
 
 ### Bias
 
-- Training data biased toward mechanical parts and common geometric primitives
-- Over-representation of simple shapes (cubes, cylinders, brackets)
-- Limited representation of complex assemblies and organic shapes
-- May reflect biases in caption generation process
+- Training data is biased toward mechanical parts and common geometric primitives.
+- Simple shapes (cubes, cylinders, brackets) are over-represented.
+- Complex assemblies and organic shapes are under-represented.
+- May reflect biases in the GPT-4o caption generation process.
 
 ### Risks
 
-- Generated models may not meet engineering specifications
-- Potential for generating invalid or non-manufacturable geometries
-- Should not be used in safety-critical applications without verification
-- Generated IP may inadvertently resemble training data
+- Generated models may not meet engineering specifications.
+- Potential for invalid or non-manufacturable geometry.
+- Generated geometry may resemble training data.
 
 ### Recommendations
 
-Users should:
-- Validate all generated STEP files in CAD software
-- Verify dimensions and tolerances for engineering applications
-- Check for geometric validity and manufacturability
-- Not use for safety-critical or production applications without expert review
+- Validate all generated STEP files in CAD software.
+- Verify dimensions and tolerances for engineering applications.
+- Do not use for safety-critical or production applications without expert review.
 
 ## Training Details
 
 ### Training Data
 
-- **Base Dataset**: ABC CAD Dataset (~1M CAD models)
-- **Captions**: GPT-4 Vision generated descriptions
-- **Samples**: ~XXX,XXX training examples (update with actual number)
-- **Token Length**: Filtered to < 2000 tokens
-- **Split**: 70% train, 20% validation, 10% test
+- **Base dataset**: [ABC CAD Dataset](https://archive.nyu.edu/handle/2451/43778)
+- **Captions**: generated with GPT-4o
+- **Subset**: ~20k STEP files with 0–500 entities
+- **Preprocessing**: floating-point rounding → DFS entity reorder (removes forward references) → RAG pairing → split
+- **Split**: 70% train / 10% validation / 20% test (see `data_preparation/data_split.py`)
 
-See `docs/DATASET.md` for details.
+See [`docs/DATASET.md`](docs/DATASET.md) and [`data_preparation/README.md`](data_preparation/README.md) for details.
 
-### Training Procedure
+### Prompt Template
 
-#### Preprocessing
+Training and inference use the same templates. See the "Prompt Template"
+section of [`README.md`](README.md#prompt-template) for the exact strings.
 
-1. STEP file reordering for consistency
-2. Entity renumbering
-3. Caption generation using vision models
-4. Token length filtering
-5. Dataset splitting
+### Training Hyperparameters
 
-#### Training Hyperparameters
+**LoRA configuration**:
 
-**LoRA Configuration**:
-- Rank (r): 16
-- Alpha: 16
-- Dropout: 0
-- Target modules: `q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj`
-- Trainable parameters: ~1-2% of base model
+| Parameter | Value |
+|---|---|
+| Rank (`r`) | 16 |
+| `lora_alpha` | 16 |
+| `lora_dropout` | 0 |
+| `bias` | none |
+| Target modules | `q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj` |
 
-**Training Configuration**:
-- Optimizer: AdamW
-- Learning rate: 2e-4
-- Batch size: [Update with actual value]
-- Gradient accumulation: [Update]
-- Max sequence length: 4096
-- Training epochs: [Update]
-- Hardware: [Update: e.g., 4x A100 40GB]
+**Training configuration**:
 
-**Framework**:
-- Unsloth: 2025.3.18
-- PyTorch: 2.x
-- Transformers: 4.35+
+| Parameter | Value |
+|---|---|
+| Optimiser | adamw_8bit |
+| Learning rate | 5e-5 |
+| Per-device batch size | 2 |
+| Gradient accumulation | 4 (effective batch size 8) |
+| Warmup steps | 1200 |
+| `max_seq_length` | 16384 |
+| Quantisation | none (`load_in_4bit=False`) |
+| Hardware | single GPU |
 
-#### Speeds, Sizes, Times
+Training steps per released checkpoint are listed in the checkpoint table above.
 
-**Training Time**: ~XX hours on [hardware]
-**Model Size**:
-- LoRA adapter: ~500 MB
-- Base model: ~6 GB
-- Merged model: ~6 GB
-
-**Inference Speed**:
-- With 4-bit quantization: ~XX tokens/sec
-- Without quantization: ~XX tokens/sec
+**Framework**: Unsloth 2025.3.18 · PyTorch 2.x · Transformers 4.35+
 
 ## Evaluation
 
-### Testing Data & Metrics
+### Metrics
 
-#### Test Data
-
-- Test split: 10% of dataset (~X,XXX examples)
-- Held-out, unseen during training
-- Same distribution as training data
-
-#### Metrics
-
-1. **Generation Quality**
-   - STEP file validity: XX%
-   - Geometric validity (OpenCASCADE): XX%
-   - Parse success rate: XX%
-
-2. **Geometric Accuracy**
-   - Chamfer Distance: X.XX ± X.XX
-   - Hausdorff Distance: X.XX ± X.XX
-   - Point cloud IoU: X.XX
-
-3. **Language Understanding**
-   - Caption relevance: [Qualitative/Quantitative metric]
-   - Dimension accuracy: [Metric]
-
-4. **Training Metrics**
-   - Training loss: X.XX
-   - Validation loss: X.XX
-   - Perplexity: XX.X
+- **Chamfer Distance** — geometric similarity between generated and reference models (`eval_ckpt/step_chamfer_reward.py`)
+- **Complete Ratio (CR)** — STEP file structural validity (`eval_ckpt/CR/CR_calculate.py`)
+- **Renderability** — whether the file loads and tessellates in OpenCASCADE (`eval_ckpt/renderability/check_renderability.py`)
+- **Validation loss** by checkpoint (`eval_ckpt/eval_loss_by_ckpt.py`)
 
 ### Results
 
-[Update with actual results]
+Quantitative results are reported in the DATE 2026 paper — see
+[the proceedings PDF](https://past.date-conference.com/proceedings-archive/2026/DATA/1319.pdf)
+or [arXiv:2601.12641](https://arxiv.org/abs/2601.12641).
 
-**Qualitative Examples**:
-- Successfully generates simple geometric primitives
-- Handles dimensional specifications reasonably well
-- Can produce multi-feature models (holes, grooves, etc.)
-- Struggles with very complex assemblies
-
-See `eval_ckpt/README_eval.md` for detailed evaluation results.
-
-## Environmental Impact
-
-**Hardware**: [e.g., 4x NVIDIA A100 40GB]
-**Training Time**: [e.g., 24 hours]
-**Cloud Provider**: [If applicable]
-**Carbon Footprint**: [Estimate if available]
-
-Tools for estimation:
-- [ML CO2 Impact Calculator](https://mlco2.github.io/impact/)
-- [Code Carbon](https://codecarbon.io/)
+See [`eval_ckpt/README_eval.md`](eval_ckpt/README_eval.md) for how to reproduce the evaluation.
 
 ## Technical Specifications
 
 ### Model Architecture
 
-- **Base**: Qwen2.5-3B-Instruct or Llama-3.2-3B
-- **Adaptation**: LoRA (Low-Rank Adaptation)
-- **Context length**: 4096 tokens
-- **Vocabulary size**: [Base model vocabulary]
+- **Base**: Llama-3.2-3B-Instruct or Qwen2.5-3B
+- **Adaptation**: LoRA
+- **Context length**: 16384 tokens (RoPE scaling handled by Unsloth)
 
-### Compute Infrastructure
+### Compute Requirements
 
-**Training**:
-- GPU: [e.g., 4x A100 40GB]
-- CPU: [e.g., 64 cores]
-- RAM: [e.g., 256 GB]
-- Storage: [e.g., 2 TB SSD]
+**Training**: single NVIDIA GPU, 24 GB+ VRAM recommended.
 
-**Inference**:
-- Minimum: 1x GPU with 8GB VRAM (with 4-bit quantization)
-- Recommended: 1x GPU with 16GB+ VRAM
+**Inference**: NVIDIA GPU required. At least 16 GB VRAM recommended — STEP files
+can run to 16k tokens.
 
 ### Software
 
-- Unsloth: 2025.3.18
-- PyTorch: 2.0+
-- Transformers: 4.35+
-- Python: 3.10+
-- CUDA: 11.8+
+- Unsloth 2025.3.18
+- PyTorch 2.0+
+- Transformers 4.35+
+- Python 3.10+
+- CUDA 11.8+
 
-## Model Card Authors
+## How to Get Started
 
-[Your Name]
+```bash
+# 1. Set up the environment
+bash scripts/setup.sh
+conda activate step_llm
 
-## Model Card Contact
+# 2. Download the LoRA adapters (~150 MB each)
+bash scripts/download_checkpoints.sh
 
-[Your Email/GitHub]
+# 3. Generate
+python generate_step.py \
+    --ckpt_path ./checkpoints/step-llm-llama3b-no_rag \
+    --caption   "A cylindrical bolt with a hexagonal head"
+```
+
+### Merging a LoRA Adapter (optional)
+
+Merging produces a standalone model that loads faster and needs no PEFT
+dependency at inference time:
+
+```bash
+python scripts/merge_lora_adapter.py \
+    --base_model_path Qwen/Qwen2.5-3B \
+    --adapter_path    ./checkpoints/step-llm-qwen3b \
+    --output_path     ./merged_model/step-llm-qwen3b-merged
+```
 
 ## Citation
 
 ```bibtex
-@misc{cad_text_to_step_2025,
-  title={Text-to-CAD: Generating STEP Files from Natural Language},
-  author={Your Name},
-  year={2025},
-  url={your-github-url}
+@inproceedings{shi2026stepllm,
+  title={STEP-LLM: Generating CAD STEP Models from Natural Language with Large Language Models},
+  author={Shi, Xiangyu and Ding, Junyang and Zhao, Xu and Zhan, Sinong and Mohapatra, Payal and Quispe, Daniel and Welbeck, Kojo and Cao, Jian and Chen, Wei and Guo, Ping and Zhu, Qi},
+  booktitle={Proceedings of the 2026 Design, Automation \& Test in Europe Conference \& Exhibition (DATE)},
+  year={2026},
+  organization={IEEE}
 }
 ```
 
-## How to Get Started
+## Model Card Contact
 
-### Download and Merge LoRA Adapter
-
-```bash
-# Download base model
-python scripts/download_base_models.sh
-
-# Download LoRA adapter from releases
-# Link: [your-release-url]
-
-# Merge adapter with base model
-python scripts/merge_lora_adapter.py \
-    --base_model_path ./Qwen2.5-3B-Instruct \
-    --adapter_path ./lora_adapter \
-    --output_path ./merged_model
-```
-
-### Basic Inference
-
-```bash
-python examples/basic_inference.py
-```
-
-### With RAG
-
-```bash
-python examples/rag_inference.py
-```
-
-## More Information
-
-- **Repository**: [GitHub URL]
-- **Documentation**: See `README.md` and `docs/`
-- **Dataset**: See `docs/DATASET.md`
-- **Training**: See `docs/TRAINING.md`
-- **Paper**: [Link if available]
+Open an issue at https://github.com/JasonShiii/STEP-LLM/issues

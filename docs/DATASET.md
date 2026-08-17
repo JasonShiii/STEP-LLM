@@ -82,13 +82,14 @@ bash scripts/process_dataset.sh
 import json
 
 # Load training data
-with open('data/abc_rag/train.json', 'r') as f:
+with open('dataset/abc_rag/train_val_test/train.json', 'r') as f:
     train_data = json.load(f)
 
 # Access example
 example = train_data[0]
 print(f"Caption: {example['caption']}")
 print(f"STEP file: {example['output'][:200]}...")
+print(f"Retrieved neighbour: {example['relavant_step_file'][:200]}...")  # RAG field
 ```
 
 ## Data Format Details
@@ -154,20 +155,23 @@ See `data_filter_long/README_filtering.md` for details.
 
 ## License and Attribution
 
-- **ABC Dataset**: Licensed under [ABC dataset terms]
-- **Generated Captions**: [Your license - e.g., CC-BY-4.0]
-- **Processed Data**: [Your license]
+- **ABC Dataset**: retains its original terms — see the
+  [ABC dataset page](https://archive.nyu.edu/handle/2451/43778).
+- **Generated captions and processed data**: released under this repository's
+  [MIT LICENSE](../LICENSE). They are derived from the ABC dataset, so ABC's
+  terms continue to apply to the underlying CAD geometry.
 
 ### Citation
 
-If you use this dataset, please cite:
+If you use this dataset, please cite the STEP-LLM paper and the ABC dataset:
 
 ```bibtex
-@dataset{abc_cad_captions,
-  title={ABC CAD with Natural Language Captions},
-  author={Your Name},
-  year={2025},
-  url={your-github-url}
+@inproceedings{shi2026stepllm,
+  title={STEP-LLM: Generating CAD STEP Models from Natural Language with Large Language Models},
+  author={Shi, Xiangyu and Ding, Junyang and Zhao, Xu and Zhan, Sinong and Mohapatra, Payal and Quispe, Daniel and Welbeck, Kojo and Cao, Jian and Chen, Wei and Guo, Ping and Zhu, Qi},
+  booktitle={Proceedings of the 2026 Design, Automation \& Test in Europe Conference \& Exhibition (DATE)},
+  year={2026},
+  organization={IEEE}
 }
 
 @inproceedings{koch2019abc,
@@ -196,6 +200,5 @@ If you use this dataset, please cite:
 ## Support
 
 For dataset-related issues:
-- Open an issue on GitHub
-- Check FAQ in `docs/FAQ.md`
-- Contact: [your-email]
+- Open an issue on [GitHub](https://github.com/JasonShiii/STEP-LLM/issues)
+- See the data preparation walkthrough in [`../data_preparation/README.md`](../data_preparation/README.md)

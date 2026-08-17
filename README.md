@@ -86,13 +86,16 @@ python generate_step.py \
     --ckpt_path     ./checkpoints/step-llm-qwen3b \
     --use_rag \
     --db_csv_path   ./dataset/cad_captions_0-500.csv \
-    --step_json_dir ./dataset/abc_rag/20500_dfs \
+    --step_json_dir ./dataset/abc_rag/train_val_test \
     --caption       "A cylindrical bolt with a hexagonal head" \
     --save_dir      ./generated \
     --output_name   bolt.step
 ```
 
 See `python generate_step.py --help` for all options.
+
+> The `--step_json_dir` used for RAG is produced by the data preparation
+> pipeline — see [Build the Full RAG Dataset](#build-the-full-rag-dataset).
 
 ---
 

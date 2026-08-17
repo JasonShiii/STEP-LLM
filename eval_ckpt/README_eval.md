@@ -2,6 +2,23 @@
 
 To evaluate the ckpts trained on new dataset, here're some steps to follow:
 
+> **What ships with this repository.** The evaluation code released here is:
+>
+> | Script | Metric |
+> |---|---|
+> | [`eval_loss_by_ckpt.py`](eval_loss_by_ckpt.py) | Validation loss per checkpoint |
+> | [`CR/CR_calculate.py`](CR/CR_calculate.py) | Complete Ratio |
+> | [`step_chamfer_reward.py`](step_chamfer_reward.py) | Chamfer distance between two STEP files |
+> | [`renderability/check_renderability.py`](renderability/check_renderability.py) | Renderability |
+> | [`ACE/step_entity_analyzer.py`](ACE/step_entity_analyzer.py) | STEP entity statistics |
+>
+> The point-cloud shape-evaluation pipeline described in section 3 (`eval_ckpt/Shape/`)
+> and the batch generation helpers in section 4 are internal research scripts that
+> are **not included** in this release. Those sections are kept as a description of
+> the methodology used in the paper; `step_chamfer_reward.py` is the released,
+> self-contained equivalent for Chamfer distance — see
+> [`README_step_chamfer_reward.md`](README_step_chamfer_reward.md).
+
 ## 1. Filter the data according to token number
 When the token number of a prompt exceed a certain amount, the `eval_loss` will get *nan* value.
 Through experiment, the current threshold is set to **16455**
@@ -9,7 +26,11 @@ Through experiment, the current threshold is set to **16455**
 - For previous case that using STEP file & rendered image for captioning, the script `captioning_old.ipynb` has already calculated the token number and fill the value in `cad_captions.csv`
 - While now we only use rendered image for captioning, the captioning prompt no longer contains STEP file. Thus, script `recalculate_token_count.py` recalculates the token number of data in `cad_captions.csv` and replace the *token_count* value.
 - Script `debug_find_delete_longest_data.py` then processes the test dataset filters out the data whose token number exceeds the threshold, and records the filtered data in `debug_testset_deleted.csv`
-- Run `eval_loss_by_ckpt.py` to calculate the *eval_loss* of different ckpts. `eval_loss_by_ckptn.py` are just copies of `eval_loss_by_ckpt.py` for parallel running. 
+- Run [`eval_loss_by_ckpt.py`](eval_loss_by_ckpt.py) to calculate the *eval_loss* of different ckpts. For parallel evaluation we ran several copies of this script side by side.
+
+> `recalculate_token_count.py`, `debug_find_delete_longest_data.py` and
+> `captioning_old.ipynb` are internal preprocessing helpers and are not included
+> in this release; `eval_loss_by_ckpt.py` is.
 
 
 ## 2. Compute *Complete_Ratio* metric
@@ -25,6 +46,12 @@ select a ckpt model
 ## 3. Compute Shape and Geometric Metrics
 
 Comprehensive Chamfer Distance evaluation with rigid transformation invariance and scale normalization for robust shape comparison.
+
+> **Not included in this release.** The scripts in this section live in
+> `eval_ckpt/Shape/` and are internal research code. The section documents the
+> methodology used for the paper's shape metrics. For a released, self-contained
+> Chamfer distance implementation that operates directly on two STEP files, use
+> [`step_chamfer_reward.py`](step_chamfer_reward.py).
 
 ### Overview
 
@@ -44,7 +71,6 @@ The shape evaluation pipeline computes Chamfer Distance (CD) between point cloud
 
 #### Environment Setup
 ```bash
-conda activate brepgen_env
 cd ./eval_ckpt/Shape/
 ```
 
@@ -203,21 +229,33 @@ cd ./eval_ckpt/Shape
 
 ./calculate_median_cd.sh <ground_truth_dir> <generated_dir> [output_file]
 ```
-- The `output_file` should be under `cad_codebased/eval_ckpt/Shape/output_CD`
-- The point cloud directory should be under `cad_codebased/eval_ckpt/Shape/pointcloud_eval`
+- The `output_file` should be under `eval_ckpt/Shape/output_CD`
+- The point cloud directory should be under `eval_ckpt/Shape/pointcloud_eval`
 
 
 
-## 4. Generate bacthes of STEP file of different ckpt for evaluation
-- Switch to conda env `cad_llm3`. (*cad_llm3* is set up from a copy of *cad_llm2*.)
-  
-   Previously *cad_llm2* works for */cad_codebased/generate_step.py* where *faiss* was replaced by *sklearn* for cosine-similarity calculation due to env compatibility issues. *cad_llm3* debugged the issue of faiss and worked fine with */cad_codebased/eval_ckpt/generate_step_initial.py*
+## 4. Generate batches of STEP files from different ckpts for evaluation
 
-- Run `generate_step_initial.py` first on a designated ckpt to generate the first batch of STEP file.
-- Run `generate_step_ckpt.py` later on the rest of ckpts to generate STEP files that have the same model_id of the first batch.
+To compare checkpoints fairly, every checkpoint must generate STEP files for the
+*same* set of test `model_id`s:
+
+- Generate the first batch with a designated checkpoint, recording the `model_id`
+  of each generated file.
+- Generate the remaining checkpoints' batches over that same `model_id` list.
+
+Use [`generate_step.py`](../generate_step.py) at the repository root for
+generation — note that RAG and no-RAG checkpoints require their matching
+`--use_rag` setting, since they were trained with different prompt templates.
+The internal batch drivers we used (`generate_step_initial.py`,
+`generate_step_ckpt.py`) are not included in this release.
+
+> Retrieval in `generate_step.py` uses scikit-learn cosine similarity rather
+> than FAISS, which avoids an environment compatibility issue we hit with FAISS
+> at inference time. FAISS is still used during dataset construction.
 
 ## 5. Batch Process the STEP Files to Point Clouds
-Refer to `eval_ckpt/Shape/README_batch_conversion.md` to check the details of converting ckpt's generated STEP file to point clouds for ckpt evaluation.
+Converting generated STEP files to point clouds is part of the internal
+`eval_ckpt/Shape/` pipeline and is not included in this release. See section 3.
 
 
 

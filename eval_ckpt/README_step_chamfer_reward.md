@@ -213,13 +213,12 @@ GT-only approach:  scale_factor = 1.0   → realistic CD relative to GT
 
 ### Run Test Suite
 ```bash
-python test_step_chamfer.py
+python eval_ckpt/test_step_chamfer.py
 ```
 
 ### View Examples
-```bash
-python example_usage.py
-```
+
+See the [Common Use Cases](#common-use-cases) section below.
 
 ## File Structure
 
@@ -227,7 +226,6 @@ python example_usage.py
 eval_ckpt/
 ├── step_chamfer_reward.py          # Main script
 ├── test_step_chamfer.py            # Test suite
-├── example_usage.py                # Usage examples
 └── README_step_chamfer_reward.md   # This documentation
 ```
 
