@@ -1,15 +1,19 @@
-# conda activate cad_llm3
+#!/usr/bin/env python3
+"""
+STEP file generation from natural language, with or without RAG.
+
+This is the inference entry point for STEP-LLM. The prompt templates below
+must stay byte-identical to the ones in llama3_SFT_response.py — the
+checkpoints were trained on those exact strings.
+
+See README.md ("Run Inference") for usage, or run with --help.
+"""
 
 import os
 import json
 import argparse
-import pandas as pd
-import torch
 from unsloth import FastLanguageModel
 from transformers import TextStreamer
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
 
 def load_model(ckpt_path, max_seq_length=16384, dtype=None, load_in_4bit=False):
@@ -25,6 +29,11 @@ def load_model(ckpt_path, max_seq_length=16384, dtype=None, load_in_4bit=False):
 
 
 def retrieve_step_text(caption, db_csv_path, step_json_dir, top_k=5):
+    # Imported lazily so that no-RAG generation does not require the retrieval stack.
+    import pandas as pd
+    from sentence_transformers import SentenceTransformer
+    from sklearn.metrics.pairwise import cosine_similarity
+
     df = pd.read_csv(db_csv_path)
     df = df[df["isDescribable"] == True]
 
@@ -64,21 +73,22 @@ def retrieve_step_text(caption, db_csv_path, step_json_dir, top_k=5):
     )
 
 
-# Prompt templates (must match the format used during training)
+# Prompt templates. These MUST stay byte-identical to the ones in
+# llama3_SFT_response.py — the checkpoints were trained on those exact strings,
+# and even a one-word difference degrades generation quality.
 ABC_PROMPT_RAG = """You are a CAD model generation assistant trained to produce STEP (.step) files based on textual descriptions. Given the following object description and relevant retrieved CAD data, generate a STEP file that accurately represents the described object.
 
 
 ### caption:
 {}
 
-### retrieved relavant step file:
+### retrieved relevant step file:
 {}
 
 ### output:
 {}"""
 
-ABC_PROMPT_NO_RAG = """You are a CAD model generation assistant trained to produce STEP (.step) files based on textual descriptions. Given the following object description and relevant retrieved CAD data, generate a STEP file that accurately represents the described object.
-
+ABC_PROMPT_NO_RAG = """You are a CAD model generation assistant trained to produce STEP (.step) files based on textual descriptions. Given the following object description, generate a STEP file that accurately represents the described object.
 
 ### caption:
 {}
@@ -86,9 +96,25 @@ ABC_PROMPT_NO_RAG = """You are a CAD model generation assistant trained to produ
 ### output:
 {}"""
 
+# Standard STEP header prepended to the generated DATA section. The model is
+# trained to emit only the DATA section, so the header is added back here.
+STEP_HEADER = """ISO-10303-21;
+HEADER;
+FILE_DESCRIPTION( ( '' ), ' ' );
+FILE_NAME( '/vol/tmp/translate-8579754438183730235/5ae5839f3947920fcf80d878.step', '2018-04-29T08:34:40', ( '' ), ( '' ), ' ', ' ', ' ' );
+FILE_SCHEMA( ( 'AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }' ) );
+ENDSEC;"""
+
 
 def generate_step_file(
-    ckpt_path, db_csv_path, step_dir, use_rag, caption, save_dir, output_name="output.step"
+    ckpt_path,
+    db_csv_path,
+    step_dir,
+    use_rag,
+    caption,
+    save_dir,
+    output_name="output.step",
+    max_new_tokens=14000,
 ):
     model, tokenizer = load_model(ckpt_path)
 
@@ -104,20 +130,14 @@ def generate_step_file(
     inputs = tokenizer([formatted_prompt], return_tensors="pt").to("cuda")
     streamer = TextStreamer(tokenizer)
     print(f"Generating STEP file with model object id: {id(model)}...")
-    generated = model.generate(**inputs, streamer=streamer, max_new_tokens=14000)
+    generated = model.generate(**inputs, streamer=streamer, max_new_tokens=max_new_tokens)
     output_text = tokenizer.decode(generated[0], skip_special_tokens=True)
 
     # Extract the STEP DATA section (after '### output:')
     step_data = output_text.split("### output:")[-1].strip()
 
     # Prepend standard STEP header
-    header = """ISO-10303-21;
-HEADER;
-FILE_DESCRIPTION( ( '' ), ' ' );
-FILE_NAME( '/vol/tmp/translate-8579754438183730235/5ae5839f3947920fcf80d878.step', '2018-04-29T08:34:40', ( '' ), ( '' ), ' ', ' ', ' ' );
-FILE_SCHEMA( ( 'AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }' ) );
-ENDSEC;"""
-    full_step_file = header + "\n" + step_data
+    full_step_file = STEP_HEADER + "\n" + step_data
 
     # Save
     os.makedirs(save_dir, exist_ok=True)
@@ -145,8 +165,8 @@ Examples:
   python generate_step.py \\
       --ckpt_path ./checkpoints/step-llm-qwen3b \\
       --use_rag \\
-      --db_csv_path ./cad_captions_0-500.csv \\
-      --step_json_dir ./data/abc_rag/20500_dfs \\
+      --db_csv_path ./dataset/cad_captions_0-500.csv \\
+      --step_json_dir ./dataset/abc_rag/train_val_test \\
       --caption "A cylindrical bolt with a hexagonal head" \\
       --save_dir ./generated \\
       --output_name bolt.step
@@ -188,6 +208,12 @@ Examples:
         help="Directory containing train/val/test JSON files for RAG retrieval "
              "(required when --use_rag).",
     )
+    parser.add_argument(
+        "--max_new_tokens",
+        type=int,
+        default=14000,
+        help="Maximum number of tokens to generate (default: 14000).",
+    )
 
     args = parser.parse_args()
 
@@ -203,6 +229,7 @@ Examples:
         caption=args.caption,
         save_dir=args.save_dir,
         output_name=args.output_name,
+        max_new_tokens=args.max_new_tokens,
     )
 
 

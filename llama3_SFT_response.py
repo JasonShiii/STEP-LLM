@@ -24,13 +24,13 @@ full model with: python scripts/merge_lora_adapter.py
 
 # Base model — one of:
 #   "meta-llama/Llama-3.2-3B-Instruct"   (requires HF access token)
-#   "Qwen/Qwen2.5-3B-Instruct"
+#   "Qwen/Qwen2.5-3B"                    (the released Qwen checkpoint uses the base, not Instruct)
 #   "/local/path/to/downloaded/model"
 BASE_MODEL_PATH = "meta-llama/Llama-3.2-3B-Instruct"  # UPDATE THIS PATH
 
-# RAG dataset directory (produced by dataset_construct_rag.py)
-# Must contain train.json (and optionally test.json / val.json in HF arrow format)
-DATASET_PATH = "./data/abc_rag/20500_dfs"  # UPDATE THIS PATH
+# RAG dataset directory (produced by data_split.py, the last data preparation step)
+# Must contain train.json (and optionally test.json / val.json)
+DATASET_PATH = "./dataset/abc_rag/train_val_test"  # UPDATE THIS PATH
 
 # Where to save the LoRA adapter after training
 LORA_SAVE_PATH = "./lora_adapter"  # UPDATE THIS PATH

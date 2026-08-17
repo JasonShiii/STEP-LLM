@@ -183,16 +183,19 @@ def main():
     if all_passed:
         print("✓ All required packages are installed correctly!")
         print("\nYou can now:")
-        print("  1. Download dataset: bash scripts/download_abc_dataset.sh")
-        print("  2. Try inference: python examples/basic_inference.py")
-        print("  3. Start training: See continuous_training_junyang/")
+        print("  1. Download LoRA adapters: bash scripts/download_checkpoints.sh")
+        print("  2. Try inference:")
+        print("       python generate_step.py \\")
+        print("           --ckpt_path ./checkpoints/step-llm-llama3b-no_rag \\")
+        print("           --caption   'A cylindrical bolt with a hexagonal head'")
+        print("  3. Start training: see README.md ('Training')")
         return 0
     else:
         print("✗ Some required packages are missing or incorrectly configured.")
         print("\nTo fix:")
-        print("  1. Review ENVIRONMENT_SETUP.md")
-        print("  2. Run: bash scripts/setup.sh")
-        print("  3. Or install manually: pip install -r requirements.txt")
+        print("  1. Run: bash scripts/setup.sh")
+        print("  2. Or install manually: pip install -r requirements.txt")
+        print("  3. See README.md ('Setup Environment') for details")
         return 1
 
 if __name__ == "__main__":
