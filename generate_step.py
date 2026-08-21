@@ -34,6 +34,17 @@ def retrieve_step_text(caption, db_csv_path, step_json_dir, top_k=5):
     from sentence_transformers import SentenceTransformer
     from sklearn.metrics.pairwise import cosine_similarity
 
+    json_paths = [
+        os.path.join(step_json_dir, f) for f in ("train.json", "test.json", "val.json")
+    ]
+    json_paths = [p for p in json_paths if os.path.isfile(p)]
+    if not json_paths:
+        raise FileNotFoundError(
+            f"No train.json / test.json / val.json found in '{step_json_dir}'. "
+            "The RAG retrieval database must be built first — see README.md, "
+            "section 'Build the Full RAG Dataset'."
+        )
+
     df = pd.read_csv(db_csv_path)
     df = df[df["isDescribable"] == True]
 
@@ -48,6 +59,15 @@ def retrieve_step_text(caption, db_csv_path, step_json_dir, top_k=5):
     # Get top_k most similar indices (descending)
     top_indices = similarities.argsort()[-top_k:][::-1]
 
+    def lookup_step_text(model_id):
+        """Return (json_filename, output_text) for model_id, or (None, None)."""
+        for path in json_paths:
+            with open(path, "r") as f:
+                for item in json.load(f):
+                    if str(item["id_original"]).zfill(8) == model_id:
+                        return os.path.basename(path), (item.get("output") or "").strip()
+        return None, None
+
     for rank, idx in enumerate(top_indices):
         model_id = str(df.iloc[idx]["model_id"]).zfill(8)
         description = df.iloc[idx]["description"]
@@ -57,19 +77,30 @@ def retrieve_step_text(caption, db_csv_path, step_json_dir, top_k=5):
             f"(model_id: {model_id}, similarity: {similarity_score:.4f})"
         )
 
-        for fname in ["train.json", "test.json", "val.json"]:
-            path = os.path.join(step_json_dir, fname)
-            with open(path, "r") as f:
-                data = json.load(f)
-                for item in data:
-                    if str(item["id_original"]).zfill(8) == model_id:
-                        print(f"Found STEP file in {fname} for model_id {model_id}")
-                        return item["output"], model_id, description
+        fname, step_text = lookup_step_text(model_id)
+        if fname is None:
+            print(f"Top-{rank+1} retrieved model_id {model_id} not found in JSON directory.")
+            continue
+        if not step_text:
+            # An empty 'output' means the JSONs were built without the actual ABC
+            # STEP files present. Feeding an empty retrieved block to a RAG
+            # checkpoint puts it off-distribution and produces garbage, so skip.
+            print(
+                f"WARNING: entry for model_id {model_id} in {fname} has an empty "
+                "'output' field — the retrieval database was likely built without "
+                "the ABC STEP files in place. Trying next match."
+            )
+            continue
 
-        print(f"Top-{rank+1} retrieved model_id {model_id} not found in JSON directory.")
+        print(f"Found STEP file in {fname} for model_id {model_id}")
+        return step_text, model_id, description
 
-    raise FileNotFoundError(
-        f"No STEP file found for any of the top-{top_k} matches."
+    raise RuntimeError(
+        f"No usable STEP text found among the top-{top_k} matches. If matches were "
+        "found but had empty 'output' fields, the RAG retrieval database was built "
+        "incorrectly (most likely without the ABC STEP files downloaded and "
+        "DFS-restructured). Rebuild it following README.md, section "
+        "'Build the Full RAG Dataset'."
     )
 
 

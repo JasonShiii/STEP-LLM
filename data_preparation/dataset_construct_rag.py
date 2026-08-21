@@ -113,21 +113,28 @@ def create_rag_dataset():
     index = build_faiss_index(embeddings)
 
     dataset = []
+    skipped_no_step = 0
 
     for i, row in data.iterrows():
         model_id_original = row['model_id']
         caption = row['description']
 
+        # Load STEP file DATA section; skip captions whose STEP file is missing.
+        # Silently emitting entries with an empty 'output' would poison both
+        # training and RAG retrieval downstream.
+        output = load_step_data(model_id_original)
+        if not output.strip():
+            skipped_no_step += 1
+            continue
+
         # Retrieve related caption using FAISS
         query_embedding = model.encode([caption], convert_to_tensor=False)
         retrieved_results = search_faiss(index, query_embedding, data, exclude_id=model_id_original, top_k=1)
-        
+
         if retrieved_results:
             model_id_retrieve, _, _ = retrieved_results[0]
         else:
             model_id_retrieve = None  # In case of retrieval failure
-        # Load STEP file DATA section
-        output = load_step_data(model_id_original)
         relevant_step_file = load_step_data(model_id_retrieve) if model_id_retrieve else ""
         # Append to dataset
         dataset.append({
@@ -138,11 +145,24 @@ def create_rag_dataset():
             "output": output
         })
 
+    if not dataset:
+        raise RuntimeError(
+            f"No STEP data found for any of the {len(data)} captions. "
+            f"Check that STEP_FILE_DIRS points at your DFS-restructured STEP "
+            f"directories (currently: {STEP_FILE_DIRS[:2]}...). "
+            "See README.md, section 'Build the Full RAG Dataset'."
+        )
+    if skipped_no_step:
+        print(
+            f"Warning: skipped {skipped_no_step}/{len(data)} captions with no "
+            "matching STEP file under STEP_FILE_DIRS."
+        )
+
     # Save dataset to JSON
     with open(OUTPUT_JSON_PATH, "w", encoding="utf-8") as json_file:
         json.dump(dataset, json_file, indent=4)
 
-    print(f"Dataset saved to {OUTPUT_JSON_PATH}")
+    print(f"Dataset saved to {OUTPUT_JSON_PATH} ({len(dataset)} entries)")
 
 if __name__ == "__main__":
     create_rag_dataset()

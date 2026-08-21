@@ -96,6 +96,13 @@ See `python generate_step.py --help` for all options.
 
 > The `--step_json_dir` used for RAG is produced by the data preparation
 > pipeline — see [Build the Full RAG Dataset](#build-the-full-rag-dataset).
+> RAG generation requires the **full** pipeline, including the downloaded ABC
+> STEP files: the retrieved example fed into the prompt comes from those files.
+> If the console output shows an empty `### retrieved relevant step file:`
+> block, your retrieval database contains empty entries (built without the ABC
+> STEP files) — the script now stops with an error instead of generating
+> off-distribution garbage. Rebuild the dataset, or use the no-RAG model,
+> which needs no retrieval database at all.
 
 ---
 
@@ -211,6 +218,8 @@ python data_preparation/round_step_numbers.py dataset/abccad/step_under500/ \
 bash data_preparation/batch_restructure.sh
 
 # 3. Build RAG dataset (pairs each STEP file with a FAISS-retrieved similar example)
+#    Edit CSV_FILE / STEP_FILE_DIRS at the top of the script first —
+#    STEP_FILE_DIRS must list the DFS-restructured directories from step 2:
 python data_preparation/dataset_construct_rag.py
 
 # 4. Split into train / val / test
