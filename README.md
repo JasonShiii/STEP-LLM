@@ -13,7 +13,7 @@ STEP-LLM fine-tunes compact LLMs (Llama-3.2-3B and Qwen2.5-3B) to generate valid
 |---|---|
 | **Data Preparation** | Caption ABC dataset with GPT-4o, reorder STEP entities (DFS), build RAG index |
 | **Training** | Fine-tune with [Unsloth](https://github.com/unslothai/unsloth) + LoRA on RAG-formatted STEP data |
-| **Inference** | Generate STEP files with optional FAISS-based retrieval (`generate_step.py`) |
+| **Inference** | Generate STEP files with optional caption-similarity retrieval (`generate_step.py`) |
 | **Evaluation** | Chamfer distance, Complete Ratio, renderability metrics |
 
 
