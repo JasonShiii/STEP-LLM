@@ -5,9 +5,13 @@ torch>=2.0.0
 transformers>=4.35.0
 datasets>=2.14.0
 
-# Unsloth for efficient training (use specific versions)
-unsloth==2025.3.18
-unsloth_zoo==2025.3.16
+# Unsloth for efficient training and inference.
+# A floating minimum, not an exact pin: unsloth patches transformers internals,
+# so an old unsloth pinned against a new transformers fails at import time.
+# Recent unsloth versions load the released checkpoints without issues.
+# (environment.yml has the exact frozen versions used for the paper.)
+unsloth>=2025.3.18
+unsloth_zoo>=2025.3.16
 
 # TRL for RLHF/DPO training
 trl>=0.7.0
