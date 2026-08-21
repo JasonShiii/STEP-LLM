@@ -22,7 +22,10 @@ faiss-cpu>=1.7.4  # Use faiss-gpu if CUDA is available
 sentence-transformers>=2.2.0
 
 # CAD/STEP File Processing
-pythonocc-core>=7.7.0  # OpenCASCADE bindings
+# NOTE: pythonocc-core has NO PyPI package — it must be installed via conda:
+#   conda install -c conda-forge pythonocc-core
+# It is only needed for STEP verification/rendering (eval_ckpt/renderability),
+# not for inference or training.
 trimesh>=3.23.0
 open3d>=0.17.0
 
