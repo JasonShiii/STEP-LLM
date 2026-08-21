@@ -10,22 +10,18 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Use cad_captions_0-500.csv for the DATE 2026 paper dataset (0–500 entities)
 CSV_FILE = "./dataset/cad_captions_0-500.csv"
 # UPDATE STEP_FILE_DIRS to point to your DFS-restructured STEP file directories.
-# After running batch_restructure.sh, your files should be under dataset/dfs_step/.
-# Example for the DATE paper (0–500 entity files, chunks 0001–0008):
+# Each listed directory must contain per-model subdirectories (<model_id>/x.step).
+# After running batch_restructure.sh on a raw ABC chunk, that is simply:
 STEP_FILE_DIRS = [
-    "./dataset/dfs_step/0001",
-    "./dataset/dfs_step/0002",
-    "./dataset/dfs_step/0003",
-    "./dataset/dfs_step/0004",
-    "./dataset/dfs_step/0005",
-    "./dataset/dfs_step/0006",
-    "./dataset/dfs_step/0007",
-    "./dataset/dfs_step/0008",
-    # Add 500-1000 entity dirs here for the journal extension:
-    # "./dataset/dfs_step_500-1000/0001",
-    # ...
-    # "./dataset/dfs_step_500-1000/0010",
+    "./dataset/dfs_step",
 ]
+# If your dfs_step is organised into numbered chunk buckets (the layout used
+# for the DATE paper), list the buckets instead:
+# STEP_FILE_DIRS = [
+#     "./dataset/dfs_step/0001",
+#     ...
+#     "./dataset/dfs_step/0008",
+# ]
 OUTPUT_JSON_PATH = "./dataset/rag_dataset.json"
 
 # Step 1: Load captions from CSV
