@@ -167,6 +167,14 @@ def generate_step_file(
     # Extract the STEP DATA section (after '### output:')
     step_data = output_text.split("### output:")[-1].strip()
 
+    # Truncate at the STEP terminator: depending on the tokenizer version,
+    # trailing special tokens (e.g. '<|eot_id|>') can survive decoding and
+    # would corrupt the saved file for strict STEP parsers.
+    terminator = "END-ISO-10303-21;"
+    end = step_data.find(terminator)
+    if end != -1:
+        step_data = step_data[: end + len(terminator)]
+
     # Prepend standard STEP header
     full_step_file = STEP_HEADER + "\n" + step_data
 

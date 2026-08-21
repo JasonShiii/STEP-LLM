@@ -69,7 +69,14 @@ bash scripts/download_checkpoints.sh llama-no-rag  # Llama (no-RAG) only
 bash scripts/download_checkpoints.sh qwen          # Qwen (RAG) only
 ```
 
-> The adapters can be used directly at inference time without merging.
+> The adapters can be used directly at inference time without merging —
+> unsloth automatically downloads the adapter's base model on first load.
+> **Note (Llama adapters):** their `adapter_config.json` references
+> `meta-llama/Llama-3.2-3B-Instruct`, which is a gated repository. Either run
+> `huggingface-cli login` with an account that has accepted the Llama 3.2
+> license, or edit `base_model_name_or_path` in the downloaded adapter's
+> `adapter_config.json` to `unsloth/Llama-3.2-3B-Instruct` (an ungated mirror
+> with identical weights).
 > See [Merge LoRA Adapter](#merge-lora-adapter-optional) if you prefer a standalone model.
 
 ### 4. Run Inference
